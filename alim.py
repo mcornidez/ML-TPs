@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import kurtosis, skew
 
 xls = pd.ExcelFile(r"Datos Alimenticios.xls")
 
@@ -20,6 +21,9 @@ numsheet[:,0][np.isnan(numsheet[:,0])] = mean[0]
 numsheet[:,1][np.isnan(numsheet[:,1])] = mean[1]
 numsheet[:,2][np.isnan(numsheet[:,2])] = mean[2]
 
+kurtosis = kurtosis(numsheet, axis=0)
+skew = skew(numsheet, axis=0)
+
 # df = pd.DataFrame(sheet, columns=['Grasas_sat', 'Alcohol', 'Calorías', 'Sexo'])
 # df = df.replace(999.99, float('nan'))
 # df['Grasas_sat'].fillna(df['Grasas_sat'].mean(), inplace=True)
@@ -33,6 +37,11 @@ print("General means:")
 print(mean)
 print("General stds:")
 print(std)
+print("General kurtosis:")
+print(kurtosis)
+print("General skew:")
+print(skew)
+
 
 df = pd.DataFrame(normsheet, columns=index)
 df.boxplot()
@@ -89,9 +98,9 @@ plt.ylabel('Valores Normalizados')
 plt.show()
 
 print('Comparacion Medias Hombres:')
-print((mean-m_mean)/mean)
+print((mean-m_mean)/std)
 print('Comparacion Medias Mujeres:')
-print((mean-f_mean)/mean)
+print((mean-f_mean)/std)
 
 #df = pd.DataFrame({'Media Hombre': (mean-m_mean)/mean, 'Media Mujer': (mean-f_mean)/mean}, index=index)
 #df.plot.bar(rot=0)
