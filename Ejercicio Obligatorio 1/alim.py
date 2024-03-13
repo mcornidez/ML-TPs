@@ -21,6 +21,8 @@ numsheet[:, 0][np.isnan(numsheet[:, 0])] = mean[0]
 numsheet[:, 1][np.isnan(numsheet[:, 1])] = mean[1]
 numsheet[:, 2][np.isnan(numsheet[:, 2])] = mean[2]
 
+print(mean)
+
 
 kurtosis = kurtosis(numsheet, axis=0)
 skew = skew(numsheet, axis=0)
