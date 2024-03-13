@@ -21,9 +21,6 @@ numsheet[:, 0][np.isnan(numsheet[:, 0])] = mean[0]
 numsheet[:, 1][np.isnan(numsheet[:, 1])] = mean[1]
 numsheet[:, 2][np.isnan(numsheet[:, 2])] = mean[2]
 
-print(mean)
-
-
 kurtosis = kurtosis(numsheet, axis=0)
 skew = skew(numsheet, axis=0)
 
@@ -45,7 +42,7 @@ df.boxplot()
 
 plt.title("Boxplot General")
 plt.ylabel("Valores Normalizados")
-# plt.show()
+plt.show()
 
 # Sex dependent normalization
 sheet = np.concatenate((numsheet, genders), axis=1)
@@ -72,7 +69,7 @@ df.boxplot()
 
 plt.title("Boxplot Mujeres")
 plt.ylabel("Valores Normalizados")
-# plt.show()
+plt.show()
 
 print("Male means:")
 print(m_mean)
@@ -84,39 +81,12 @@ df.boxplot()
 
 plt.title("Boxplot Hombres")
 plt.ylabel("Valores Normalizados")
-# plt.show()
+plt.show()
 
 print("Comparacion Medias Hombres:")
 print((mean - m_mean) / std)
 print("Comparacion Medias Mujeres:")
 print((mean - f_mean) / std)
-
-# df = pd.DataFrame({'Media Hombre': (mean-m_mean)/mean, 'Media Mujer': (mean-f_mean)/mean}, index=index)
-# df.plot.bar(rot=0)
-# plt.title('Media Hombre-Mujer')
-# plt.ylabel('Valores Normalizados')
-# plt.show()
-
-# Alcohol vs calories
-
-sheet = numsheet[:, 1:]
-
-calories = sheet[:, 1]
-
-low = sheet[calories < 1100, :1]
-mid = sheet[(calories > 1100) & (calories < 1700), :1]
-high = sheet[calories > 1700, :1]
-
-# sheet = np.array([low, mid, high])
-
-# df = pd.DataFrame({"Data1": low, "Data2": mid, "Data3": high})
-# df = pd.DataFrame(sheet, columns=['CATE 1', 'CATE 2', 'CATE 3'])
-# df.boxplot()
-
-# plt.title("Alcohol sobre Calorias")
-# plt.ylabel("Alcohol")
-# plt.show()
-
 
 Grasas_sat = numsheet[:, 0]
 Alcohol = numsheet[:, 1]
@@ -146,31 +116,6 @@ plt.title("Alcohol vs Calorías")
 
 plt.tight_layout()
 plt.show()
-
-# Histogram
-plt.figure(figsize=(10, 5))
-
-plt.subplot(1, 3, 1)
-plt.hist(Grasas_sat, bins=20)
-plt.xlabel("Grasas_sat")
-plt.ylabel("Frequency")
-plt.title("Distribution of Grasas_sat")
-
-plt.subplot(1, 3, 2)
-plt.hist(Alcohol, bins=20)
-plt.xlabel("Alcohol")
-plt.ylabel("Frequency")
-plt.title("Distribution of Alcohol")
-
-plt.subplot(1, 3, 3)
-plt.hist(Calorias, bins=20)
-plt.xlabel("Calorías")
-plt.ylabel("Frequency")
-plt.title("Distribution of Calorías")
-
-plt.tight_layout()
-plt.show()
-
 
 # Box plot
 plt.figure(figsize=(10, 5))
@@ -233,36 +178,6 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-# Histogram
-plt.figure(figsize=(15, 5))
-
-plt.subplot(1, 3, 1)
-plt.hist(Grasas_sat_female, bins=20, color="magenta", alpha=0.5, label="Femenino")
-plt.hist(Grasas_sat_male, bins=20, color="blue", alpha=0.5, label="Masculino")
-plt.xlabel("Grasas_sat")
-plt.ylabel("Frecuencia")
-plt.title("Distribucion de Grasas_sat")
-plt.legend()
-
-plt.subplot(1, 3, 2)
-plt.hist(Alcohol_female, bins=20, color="magenta", alpha=0.5, label="Femenino")
-plt.hist(Alcohol_male, bins=20, color="blue", alpha=0.5, label="Masculino")
-plt.xlabel("Alcohol")
-plt.ylabel("Frecuencia")
-plt.title("Distribucion de Alcohol")
-plt.legend()
-
-plt.subplot(1, 3, 3)
-plt.hist(Calorias_female, bins=20, color="magenta", alpha=0.5, label="Femenino")
-plt.hist(Calorias_male, bins=20, color="blue", alpha=0.5, label="Masculino")
-plt.xlabel("Calorías")
-plt.ylabel("Frecuencia")
-plt.title("Distribucion de Calorías")
-plt.legend()
-
-plt.tight_layout()
-plt.show()
-
 # Box plot
 plt.figure(figsize=(15, 5))
 
@@ -286,6 +201,12 @@ plt.show()
 
 ## Categorias
 
+# Alcohol vs calories
+
+sheet = numsheet[:, 1:]
+
+calories = sheet[:, 1]
+
 low = sheet[calories < 1100, :1].flatten()
 mid = sheet[(calories > 1100) & (calories < 1700), :1].flatten()
 high = sheet[calories > 1700, :1].flatten()
@@ -305,41 +226,3 @@ plt.boxplot([low, mid, high], labels=["CATE 1", "CATE 2", "CATE 3"])
 plt.title("Alcohol sobre Calorias Normalizado")
 plt.ylabel("Alcohol")
 plt.show()
-
-
-"""
-
-# Definir categorías de calorías
-sheet_categories = np.copy(sheet)
-sheet_categories[:, 2] = np.where(sheet[:, 2] <= 1100, 'CATE 1', 
-                        np.where(sheet[:, 2] <= 1700, 'CATE 2', 'CATE 3'))
-
-# Filtrar datos por categorías de calorías
-cate_1 = sheet_categories[sheet_categories[:, 2] == 'CATE 1']
-cate_2 = sheet_categories[sheet_categories[:, 2] == 'CATE 2']
-cate_3 = sheet_categories[sheet_categories[:, 2] == 'CATE 3']
-
-# Boxplot para Alcohol por categorías de calorías
-plt.figure(figsize=(10, 5))
-plt.boxplot([cate_1[:, 1], cate_2[:, 1], cate_3[:, 1]], labels=['CATE 1', 'CATE 2', 'CATE 3'])
-plt.ylabel('Alcohol')
-plt.title('Boxplot de Alcohol por categorías de Calorías')
-plt.show()
-
-# Calcular la media de alcohol para cada categoría de calorías
-mean_alcohol_cate_1 = np.mean(cate_1[:, 1])
-mean_alcohol_cate_2 = np.mean(cate_2[:, 1])
-mean_alcohol_cate_3 = np.mean(cate_3[:, 1])
-
-# Crear un gráfico de barras
-categories = ['CATE 1', 'CATE 2', 'CATE 3']
-mean_alcohol = [mean_alcohol_cate_1, mean_alcohol_cate_2, mean_alcohol_cate_3]
-
-plt.figure(figsize=(10, 6))
-plt.bar(categories, mean_alcohol, color='skyblue')
-plt.xlabel('Categorías de Calorías')
-plt.ylabel('Consumo Medio de Alcohol')
-plt.title('Consumo Medio de Alcohol por Categorías de Calorías')
-plt.show()
-
-"""
