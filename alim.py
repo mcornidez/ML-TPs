@@ -282,6 +282,47 @@ plt.title("Box plot de Calorías")
 plt.tight_layout()
 plt.show()
 
+## Categorias
+
+low = sheet[calories < 1100, :1].flatten()
+mid = sheet[(calories > 1100) & (calories < 1700), :1].flatten()
+high = sheet[calories > 1700, :1].flatten()
+
+
+max_length = max(len(low), len(mid), len(high))
+# Pad the shorter arrays with NaNs to have the same length
+if len(low) < max_length:
+    padding = np.empty(max_length - len(low)) * np.nan
+    low = np.append(low, padding)
+if len(mid) < max_length:
+    padding = np.empty(max_length - len(mid)) * np.nan
+    mid = np.append(mid, padding)
+if len(high) < max_length:
+    padding = np.empty(max_length - len(high)) * np.nan
+    high = np.append(high, padding)
+
+
+df = pd.DataFrame({"CATE 1": low, "CATE 2": mid, "CATE 3": high})
+df.boxplot()
+
+plt.title("Alcohol sobre Calorias")
+plt.ylabel("Alcohol")
+plt.show()
+
+# Normalized plot
+
+low = (low - np.nanmean(low)) / np.nanstd(low)
+mid = (mid - np.nanmean(mid)) / np.nanstd(mid)
+high = (high - np.nanmean(high)) / np.nanstd(high)
+
+df = pd.DataFrame({"CATE 1": low, "CATE 2": mid, "CATE 3": high})
+df.boxplot()
+
+plt.title("Alcohol sobre Calorias Normalizado")
+plt.ylabel("Alcohol")
+plt.show()
+
+
 """
 
 # Definir categorías de calorías
