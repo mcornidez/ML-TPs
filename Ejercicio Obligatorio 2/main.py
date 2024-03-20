@@ -9,9 +9,9 @@ def variable_correlation(x):
     cov = np.cov(x)
     std = x.std(axis=1)
 
-    print(f"Corr TV - Radio: {cov[0,1]/(std[0]*std[1])}")
-    print(f"Corr TV - Newspaper: {cov[0,2]/(std[0]*std[2])}")
-    print(f"Corr Radio - Newspaper: {cov[1,2]/(std[1]*std[2])}")
+    print(f"Corr TV - Radio: {cov[0,1]/(std[0]*std[1])} (Baja)")
+    print(f"Corr TV - Newspaper: {cov[0,2]/(std[0]*std[2])} (Baja)")
+    print(f"Corr Radio - Newspaper: {cov[1,2]/(std[1]*std[2])} (Media)")
 
 
 def simple_linear_regresion(x, y, x_label="...", y_label="Sales", title="..."):
@@ -45,7 +45,12 @@ def simple_linear_regresion(x, y, x_label="...", y_label="Sales", title="..."):
     plt.ylabel(y_label)
     plt.title(title)
     plt.legend()
+    plt.show()
 
+    plt.scatter(y, y - predicted_y)
+    plt.hlines(y=[0], xmin=[0], xmax=[y.max()], colors='grey', linestyles='--')
+    plt.xlabel(y_label)
+    plt.ylabel('Residual')
     plt.show()
 
     return (a, b)
@@ -70,10 +75,18 @@ def multiple_linear_regresion(x, y):
 
     r2 = modelSquareSum / totalSquareSum
     #Para que se de la igualdad esto de abajo deberia ser cercado a 0, como pasa en los casos unidimensionales
+    #Explicado en respuesta a este post
+    #https://stats.stackexchange.com/questions/265869/confused-with-residual-sum-of-squares-and-total-sum-of-squares
     print(f"Is close: {np.isclose(statistics.covariance(predicted_y, y - predicted_y), 0)}")
 
     print(f"R2 = {r2}")
     print(f"R2' = {1 - resudueSquareSum / totalSquareSum}")
+
+    plt.scatter(y, y - predicted_y)
+    plt.hlines(y=[0], xmin=[0], xmax=[y.max()], colors='grey', linestyles='--')
+    plt.xlabel('Sales')
+    plt.ylabel('Residual')
+    plt.show()
 
     return (a, b)
 
