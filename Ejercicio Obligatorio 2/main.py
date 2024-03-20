@@ -47,9 +47,9 @@ def simple_linear_regresion(x, y, x_label="...", y_label="Sales", title="..."):
     plt.legend()
     plt.show()
 
-    plt.scatter(y, y - predicted_y)
-    plt.hlines(y=[0], xmin=[0], xmax=[y.max()], colors='grey', linestyles='--')
-    plt.xlabel(y_label)
+    plt.scatter(predicted_y, y - predicted_y)
+    plt.hlines(y=[0], xmin=[predicted_y.min()], xmax=[predicted_y.max()], colors='grey', linestyles='--')
+    plt.xlabel('Predicted ' + y_label)
     plt.ylabel('Residual')
     plt.show()
 
@@ -82,9 +82,9 @@ def multiple_linear_regresion(x, y):
     print(f"R2 = {r2}")
     print(f"R2' = {1 - resudueSquareSum / totalSquareSum}")
 
-    plt.scatter(y, y - predicted_y)
-    plt.hlines(y=[0], xmin=[0], xmax=[y.max()], colors='grey', linestyles='--')
-    plt.xlabel('Sales')
+    plt.scatter(predicted_y, y - predicted_y)
+    plt.hlines(y=[0], xmin=[predicted_y.min()], xmax=[predicted_y.max()], colors='grey', linestyles='--')
+    plt.xlabel('Predicted Sales')
     plt.ylabel('Residual')
     plt.show()
 
