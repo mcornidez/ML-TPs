@@ -25,6 +25,7 @@ def simple_linear_regresion(x, y, x_label="...", y_label="Sales", title="..."):
     r2 = modelSquareSum / totalSquareSum
 
     print(f"R2 = {r2}")
+    print(f"Is close: {np.isclose(statistics.covariance(predicted_y, y - predicted_y), 0)}")
 
     # NOTE: Draw data
     plt.scatter(x, y)
@@ -44,22 +45,29 @@ def simple_linear_regresion(x, y, x_label="...", y_label="Sales", title="..."):
 
 def multiple_linear_regresion(x, y):
     cov_xy = np.array([statistics.covariance(xi, y) for xi in x])
-    var_x = np.array([statistics.variance(xi) for xi in x])
+    var_x = np.var(x, axis=1, ddof = 1)
 
     mean_x = x.mean(axis=1)
     mean_y = y.mean()
 
+    print(statistics.covariance(x[0], x[1]))
+    print(statistics.covariance(x[1], x[2]))
+    print(statistics.covariance(x[0], x[2]))
+
     b = cov_xy / var_x
 
-    a = mean_y - sum(b * mean_x)
+    a = mean_y - np.dot(b, mean_x)
 
-    predicted_y = a + sum(x * np.atleast_2d(b).T)
+    predicted_y = a + np.dot(np.transpose(x), b)
 
     totalSquareSum = sum((y - mean_y) ** 2)
     modelSquareSum = sum((predicted_y - mean_y) ** 2)
     resudueSquareSum = sum((y - predicted_y) ** 2)
 
     r2 = modelSquareSum / totalSquareSum
+    print(1 - resudueSquareSum / totalSquareSum)
+    #Para que se de la igualdad esto de abajo deberia ser cercado a 0, como pasa en los casos unidimensionales
+    print(f"Is close: {np.isclose(statistics.covariance(predicted_y, y - predicted_y), 0)}")
 
     print(f"R2 = {r2}")
 
