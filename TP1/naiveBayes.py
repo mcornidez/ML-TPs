@@ -4,18 +4,21 @@ import matplotlib.pyplot as plt
 
 class Classifier:
     
-    def __init__(data, classes, self):
+    def __init__(self, data, classes):
         self.data = data
         self.classes = classes
 
-        for c in classes:
+        class_set = set(classes)
+        class_indexes = list(map(lambda x: np.where(classes == x)[0], class_set))
+        counts = np.array(list(map(lambda x: x.size, class_indexes)))
+        total_count = counts.sum()
+        self.class_probs = counts / total_count
+        dissected_data = np.array(list(map(lambda x: data[x].transpose().sum(axis=1), class_indexes)))
+        self.indiv_prob = dissected_data/counts.reshape((2,1))
 
-        self.class_prob = ...
-        self.individual_prob = ...
         
 
-    def classify(instance):
-
-#Dados los datos almacenados el calculo realizado para clasificar un dato particular es:
-#P(C_i|D) = f(i)/Sum_i f(i)
-#f(C_i) = (Prod_j individual_prob[D_j, C_i]) * class_prob[C_i]
+    def classify(self, data_point):
+        complement = 1 - np.array([data_point])
+        probs = np.absolute((complement - self.indiv_prob ).prod(axis=1)) * self.class_probs
+        return list(map(lambda x: x/probs.sum(), probs))
