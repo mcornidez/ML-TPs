@@ -22,14 +22,12 @@ class Classifier:
     def laplace_correction(self, total_count, counts, data_point):
 
         total_count = total_count.reshape((2,1)) * np.ones(counts.shape)
-        complement = total_count - counts
-        complement[complement != 0] = 1
 
         for i in range(counts.shape[0]):
             for j in range(counts.shape[1]):
                 if self.needs_correction(counts[i][j], total_count[i][j], data_point[j]):
-                    counts[i][j] += complement[i][j]
-                    total_count[i][j] += 1
+                    counts[i][j] += 1
+                    total_count[i][j] += counts.shape[0]
         return total_count, counts
 
     def needs_correction(self, total_count, counts, data_point):

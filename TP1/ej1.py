@@ -12,7 +12,7 @@ def main():
 
     classifier = Classifier(prefs, nac)
 
-    print(classifier.classify([1,0,1,1,0]))
+    print(classifier.classify([0,0,1,1,0]))
 
 
 
