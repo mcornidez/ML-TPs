@@ -34,15 +34,15 @@ def simple_linear_regresion(x, y, x_label="...", y_label="Sales", title="..."):
     r2 = modelSquareSum / totalSquareSum
 
     print(f"R2 = {r2}")
-    print(
-        f"Is close: {np.isclose(statistics.covariance(predicted_y, y - predicted_y), 0)}"
-    )
 
     # NOTE: Draw data
     plt.scatter(x, y)
 
     # NOTE: Draw line
     plt.plot(x, predicted_y, color="red", label=f"y = {a:.3f} + {b:.3f}x")
+    plt.axhline(y = mean_y, color="blue", label=f"mean = {mean_y:.3f}")
+    print(x.min())
+    print(x.max())
 
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -75,6 +75,8 @@ def multiple_linear_regresion(x, y):
 
     # predicted_y = a + np.dot(x.transpose(), b)
 
+    num_var = x.shape[0]
+    num_obs = x.shape[1]
     x = np.append(np.ones((1, x.shape[1])), x, axis=0).T
 
     b = np.linalg.inv(x.T @ x) @ x.T @ y
@@ -89,15 +91,9 @@ def multiple_linear_regresion(x, y):
     resudueSquareSum = sum((y - predicted_y) ** 2)
 
     r2 = modelSquareSum / totalSquareSum
-    # Para que se de la igualdad esto de abajo deberia ser cercado a 0, como pasa en los casos unidimensionales
-    # Explicado en respuesta a este post
-    # https://stats.stackexchange.com/questions/265869/confused-with-residual-sum-of-squares-and-total-sum-of-squares
-    print(
-        f"Is close: {np.isclose(statistics.covariance(predicted_y, y - predicted_y), 0)}"
-    )
 
     print(f"R2 = {r2}")
-    print(f"R2' = {1 - resudueSquareSum / totalSquareSum}")
+    print(f"R2' = {1 - (resudueSquareSum / totalSquareSum) * ((num_obs - 1)/(num_obs - num_var))}")
 
     plt.scatter(predicted_y, y - predicted_y)
     plt.hlines(
