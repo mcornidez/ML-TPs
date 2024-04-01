@@ -13,31 +13,36 @@ class Classifier:
         class_set = set(classes)
         class_indexes = list(map(lambda x: np.where(classes == x)[0], class_set))
 
-        counts = np.array(list(map(lambda x: x.size, class_indexes)))
-        total_count = counts.sum()
-        self.class_probs = counts / total_count
+        self.counts = np.array(list(map(lambda x: x.size, class_indexes)))
+        self.total_count = self.counts.sum()
+        self.class_probs = self.counts / self.total_count
 
-        indiv_counts = np.array(list(map(lambda x: data[x].transpose().sum(axis=1), class_indexes)))
-        counts, indiv_counts = self.laplace_correction(counts, indiv_counts)
-        print(indiv_counts)
-        print(counts)
-        self.indiv_prob = indiv_counts/counts.reshape((2,1))
+        self.indiv_counts = np.array(list(map(lambda x: data[x].transpose().sum(axis=1), class_indexes)))
 
-    def laplace_correction(self, total_count, counts):
+    def laplace_correction(self, total_count, counts, data_point):
 
-        complement = total_count.reshape((2,1)) - counts
+        total_count = total_count.reshape((2,1)) * np.ones(counts.shape)
+        complement = total_count - counts
         complement[complement != 0] = 1
 
-        for i in range(counts.shape[0]-1):
-            if self.needs_correction(counts[i], total_count[i]):
-                counts[i] += complement[i]
-                total_count[i] += 1
+        for i in range(counts.shape[0]):
+            for j in range(counts.shape[1]):
+                if self.needs_correction(counts[i][j], total_count[i][j], data_point[j]):
+                    counts[i][j] += complement[i][j]
+                    total_count[i][j] += 1
         return total_count, counts
 
-    def needs_correction(self, total_count, counts):
-        return np.isin(0, (counts - total_count) * counts)
+    def needs_correction(self, total_count, counts, data_point):
+        if data_point == 0:
+            return counts - total_count == 0
+        else:
+            return counts == 0
 
     def classify(self, data_point):
+        counts, indiv_counts = self.laplace_correction(self.counts, self.indiv_counts, data_point)
+        print(indiv_counts)
+        print(counts)
+        indiv_prob = indiv_counts/counts
         complement = 1 - np.array([data_point])
-        probs = np.absolute((complement - self.indiv_prob ).prod(axis=1)) * self.class_probs
+        probs = np.absolute((complement - indiv_prob ).prod(axis=1)) * self.class_probs
         return list(map(lambda x: x/probs.sum(), probs))
