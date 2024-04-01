@@ -38,8 +38,6 @@ class Classifier:
 
     def classify(self, data_point):
         counts, indiv_counts = self.laplace_correction(self.counts, self.indiv_counts, data_point)
-        print(indiv_counts)
-        print(counts)
         indiv_prob = indiv_counts/counts
         complement = 1 - np.array([data_point])
         probs = np.absolute((complement - indiv_prob ).prod(axis=1)) * self.class_probs
