@@ -12,7 +12,8 @@ def main():
 
     classifier = Classifier(prefs, nac)
 
-    print(classifier.classify([1,1,1,1,1]))
+    print(classifier.classify([0,1,1,1,1]))
+
 
 
 if __name__ == "__main__":
