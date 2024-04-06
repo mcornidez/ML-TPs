@@ -45,4 +45,3 @@ class ConditionalModel:
     def calculate_conditional(self):
         self.class_probs = np.squeeze(self.indiv_counts)/self.counts
         return self.class_set, self.class_probs
-
