@@ -10,17 +10,16 @@ class ConditionalModel:
         self.learn()
 
     def learn(self):
-        class_set = np.unique(self.classes, axis=0)
-        class_indexes = list(map(lambda x: np.where(self.classes == x)[0], class_set))
+        self.class_set = np.unique(self.classes, axis=0)
+        self.class_indexes = list(map(lambda x: np.where(list(map(lambda x: np.all(x), np.equal(self.classes, x))))[0], self.class_set))
 
-        self.counts = np.array(list(map(lambda x: x.size, class_indexes)))
+        self.counts = np.array(list(map(lambda x: x.size, self.class_indexes)))
         self.total_count = self.counts.sum()
         self.class_probs = self.counts / self.total_count
 
-        self.indiv_counts = np.array(list(map(lambda x: self.data[x].transpose().sum(axis=1), class_indexes)))
+        self.indiv_counts = np.array(list(map(lambda x: self.data[x].transpose().sum(axis=1), self.class_indexes)))
 
     def laplace_correction(self, total_count, counts, data_point):
-
         total_count = total_count.reshape((2,1)) * np.ones(counts.shape)
 
         for i in range(counts.shape[0]):
@@ -42,3 +41,8 @@ class ConditionalModel:
         complement = 1 - np.array([data_point])
         probs = np.absolute((complement - indiv_prob ).prod(axis=1)) * self.class_probs
         return list(map(lambda x: x/probs.sum(), probs))
+    
+    def calculate_conditional(self):
+        self.class_probs = np.squeeze(self.indiv_counts)/self.counts
+        return self.class_set, self.class_probs
+
