@@ -20,7 +20,7 @@ class ConditionalModel:
         self.indiv_counts = np.array(list(map(lambda x: self.data[x].transpose().sum(axis=1), self.class_indexes)))
 
     def laplace_correction(self, total_count, counts, data_point):
-        total_count = total_count.reshape((2,1)) * np.ones(counts.shape)
+        total_count = total_count.reshape((counts.shape[0],1)) * np.ones(counts.shape)
 
         for i in range(counts.shape[0]):
             for j in range(counts.shape[1]):
