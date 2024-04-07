@@ -24,26 +24,10 @@ class ConditionalModel:
         total_count = total_count.reshape((total_count.shape[0],1))
 
         needs_correction = np.where(counts - total_count * (1 - np.array(data_point)) == 0, 1, 0)
-        print(data_point)
-        print(needs_correction)
         counts += needs_correction
         total_count = total_count + needs_correction * 2
-        print(counts)
-        print(total_count)
 
-
-        #for i in range(counts.shape[0]):
-        #    for j in range(counts.shape[1]):
-        #        if self.needs_correction(counts[i][j], total_count[i][j], data_point[j]):
-        #            counts[i][j] += 1
-        #            total_count[i][j] += counts.shape[0]
         return total_count, counts
-
-    def needs_correction(self, total_count, counts, data_point):
-        if data_point == 0:
-            return counts - total_count == 0
-        else:
-            return counts == 0
 
     def naive_classify(self, data_point):
         counts, indiv_counts = self.laplace_correction(self.counts, self.indiv_counts, data_point)
