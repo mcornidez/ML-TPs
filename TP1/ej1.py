@@ -2,6 +2,8 @@ from conditionalModel import ConditionalModel
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 
 
 def main():
@@ -12,7 +14,7 @@ def main():
 
     conditional = ConditionalModel(prefs, nac)
 
-    print(conditional.naive_classify(np.array([0,0,1,1,0])))
+    print(conditional.naive_classify(np.array([0,0,0,0,0])))
 
 
 
