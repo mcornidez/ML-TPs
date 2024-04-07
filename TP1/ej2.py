@@ -13,8 +13,8 @@ def main():
 
     #Por como estan ordenados los datos en este data set tengo una cantidad bien balanceadad de datos de cada categoria
     n = 34668
-    perc = 0.90
-    threshold = 0.0
+    perc = 0.80
+    threshold = 0.1
 
     data = df[["titular", "categoria"]].to_numpy()
     np.random.shuffle(data)
@@ -38,10 +38,6 @@ def main():
     print("Accuracy percentage {}".format(1 - res/(n*(1-perc))))
     print("Preprocessing {}".format(proc-pre_proc))
     print("Processing {}".format(end-proc))
-
-
-
-
 
 
 if __name__ == "__main__":
