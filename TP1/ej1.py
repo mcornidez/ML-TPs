@@ -14,7 +14,7 @@ def main():
 
     conditional = ConditionalModel(prefs, nac)
 
-    print(conditional.naive_classify(np.array([0,0,0,0,0])))
+    print(conditional.naive_classify(np.array([0,1,1,0,1])))
 
 
 

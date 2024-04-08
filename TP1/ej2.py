@@ -13,8 +13,8 @@ def main():
 
     #Por como estan ordenados los datos en este data set tengo una cantidad bien balanceadad de datos de cada categoria
     n = 34668
-    perc = 0.95
-    threshold = 0.1
+    perc = 0.80
+    threshold = 0
 
     data = df[["titular", "categoria"]].to_numpy()
     np.random.shuffle(data)
@@ -26,8 +26,9 @@ def main():
     binary_matrix = np.where(tfidf_matrix.toarray() > threshold, 1, 0)
     feature_names = tfidf_vectorizer.get_feature_names_out()
 
-    proc = time.time()
+    train = time.time()
     conditional = ConditionalModel(binary_matrix[:int(n*perc)], categorias[:int(n*perc)])
+    test = time.time()
     confusion = np.zeros((len(CATS), len(CATS)))
     res = 0
     for i in range(int(n*perc), int(n)):
@@ -39,8 +40,9 @@ def main():
     end = time.time()
 
     print("Accuracy percentage {}".format(1 - res/(n*(1-perc))))
-    print("Preprocessing {}".format(proc-pre_proc))
-    print("Processing {}".format(end-proc))
+    print("Preprocessing {}".format(train-pre_proc))
+    print("Train {}".format(test-train))
+    print("Test {}".format(end-test))
     print(confusion)
 
 
