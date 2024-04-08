@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    df = pd.read_excel("PreferenciasBritanicos.xlsx")
+    df = pd.read_excel("Data/PreferenciasBritanicos.xlsx")
 
     prefs = df[["scones", "cerveza", "wiskey", "avena", "futbol"]].to_numpy()
     nac = df["Nacionalidad"].transform(lambda x: 1 if x == "E" else 0).to_numpy()

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def main():
 
-    df = pd.read_csv("binary.csv")
+    df = pd.read_csv("Data/binary.csv")
     data = df[["admit", "gre", "gpa", "rank"]]
     data["gre"] = data["gre"].apply(lambda x: 1 if x >= 500 else 0)
     data["gpa"] = data["gpa"].apply(lambda x: 1 if x >= 3 else 0)

@@ -9,7 +9,7 @@ CATS = [np.nan, 'Nacional', 'Ciencia y Tecnologia', 'Entretenimiento', 'Economia
 
 def main():
     pre_proc = time.time()
-    df = pd.read_excel("cropped_news.xlsx")
+    df = pd.read_excel("Data/cropped_news.xlsx")
 
     #Por como estan ordenados los datos en este data set tengo una cantidad bien balanceadad de datos de cada categoria
     n = 34668
@@ -37,6 +37,19 @@ def main():
         confusion[categorias[i]][max_index] += 1
         res += (1 if max_index - categorias[i] != 0 else 0)
 
+    confusion = confusion[1:].transpose()[1:].transpose()
+    print(confusion)
+
+    # 0 -> TP, 1 -> TN, 2 -> FP, 3 -> FN
+    metrics = np.zeros((len(CATS)-1, 4))
+    for i in range(len(CATS)-1):
+        metrics[i][0] = confusion[i][i]
+        metrics[i][2] = confusion.transpose()[i].sum() - metrics[i][0]
+        metrics[i][3] = confusion[i].sum() - metrics[i][0]
+        metrics[i][1] = confusion.sum().sum() - metrics[i][0] - metrics[i][3] - metrics[i][2]
+    metrics = metrics.transpose()
+
+
     end = time.time()
 
     print("Accuracy percentage {}".format(1 - res/(n*(1-perc))))
@@ -44,6 +57,16 @@ def main():
     print("Train {}".format(test-train))
     print("Test {}".format(end-test))
     print(confusion)
+    accuracy = (metrics[0] + metrics[1])/(metrics[0] + metrics[1] + metrics[2] + metrics[3])
+    precision = metrics[0]/(metrics[0] + metrics[1])
+    tpos = metrics[0]/(metrics[0] + metrics[3])
+    fpos = metrics[2]/(metrics[2] + metrics[1])
+    f1 = (2*precision*tpos)/(precision+tpos)
+    print("Accuracy: {}".format(accuracy))
+    print("Precision: {}".format(precision))
+    print("TPos Rate: {}".format(tpos))
+    print("FPos Rate: {}".format(fpos))
+    print("F1: {}".format(f1))
 
 
 if __name__ == "__main__":
