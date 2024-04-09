@@ -14,7 +14,7 @@ def main():
     #Por como estan ordenados los datos en este data set tengo una cantidad bien balanceadad de datos de cada categoria
     n = 34660
     perc = 0.80
-    threshold = 0
+    threshold = 0.45
 
     data = df[["titular", "categoria"]].dropna().to_numpy()
     np.random.shuffle(data)
@@ -49,8 +49,8 @@ def main():
     print(confusion)
 
     # 0 -> TP, 1 -> TN, 2 -> FP, 3 -> FN
-    metrics = np.zeros((len(CATS)-1, 4))
-    for i in range(len(CATS)-1):
+    metrics = np.zeros((len(CATS), 4))
+    for i in range(len(CATS)):
         metrics[i][0] = confusion[i][i]
         metrics[i][2] = confusion.transpose()[i].sum() - metrics[i][0]
         metrics[i][3] = confusion[i].sum() - metrics[i][0]
@@ -74,6 +74,7 @@ def main():
     metrics = np.array([accuracy, precision, tpos, fpos, f1])
     np.savetxt("Out/metrics.csv", metrics, delimiter=',')
     print("Accuracy: {}".format(accuracy))
+    print("Mean acrcy: {}".format(accuracy.mean()))
     print("Precision: {}".format(precision))
     print("TPos Rate: {}".format(tpos))
     print("FPos Rate: {}".format(fpos))
@@ -93,6 +94,16 @@ def main():
     plt.title("Curva ROC")
     plt.legend(loc="best", ncol=2)
     plt.show()
+
+    bar_plot = [0.96, 0.958, 0.957, 0.958, 0.957, 0.954, 0.936, 0.89, 0.844]
+    x = np.arange(len(bar_plot))
+    plt.bar(x, bar_plot)
+    plt.title("Average accuracy based on threshold")
+    plt.ylabel("Average accuracy over classes")
+    plt.xlabel("Thresholds")
+    plt.xticks(x, (x*0.05).round(2))
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
