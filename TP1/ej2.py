@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 import time
 
-CATS = [np.nan, 'Nacional', 'Ciencia y Tecnologia', 'Entretenimiento', 'Economia', 'Destacadas', 'Internacional', 'Deportes', 'Salud', 'Noticias destacadas']
+CATS = ['Nacional', 'Ciencia y Tecnologia', 'Entretenimiento', 'Economia', 'Destacadas', 'Internacional', 'Deportes', 'Salud', 'Noticias destacadas']
 
 def main():
     pre_proc = time.time()
     df = pd.read_excel("Data/cropped_news.xlsx")
 
     #Por como estan ordenados los datos en este data set tengo una cantidad bien balanceadad de datos de cada categoria
-    n = 34668
+    n = 34660
     perc = 0.80
     threshold = 0
 
-    data = df[["titular", "categoria"]].to_numpy()
+    data = df[["titular", "categoria"]].dropna().to_numpy()
     np.random.shuffle(data)
     titles = data.transpose()[0]
     categorias = list(map(lambda x: CATS.index(x), data.transpose()[1]))
@@ -31,13 +31,21 @@ def main():
     test = time.time()
     confusion = np.zeros((len(CATS), len(CATS)))
     res = 0
+    roc_confusion = np.zeros((len(CATS), 11, 2, 2))
     for i in range(int(n*perc), int(n)):
         classified = np.array(conditional.naive_classify(binary_matrix[i]))
+        # Calculate confusion matrix
         max_index = classified.argmax()
         confusion[categorias[i]][max_index] += 1
         res += (1 if max_index - categorias[i] != 0 else 0)
+        # Get data for ROC
+        for cat in range(len(CATS)):
+            for j in range(0, 11):
+                is_really = 0 if cat == categorias[i] else 1
+                is_predictically = 0 if classified[cat] > j * 0.1 else 1
 
-    confusion = confusion[1:].transpose()[1:].transpose()
+                roc_confusion[cat, j, is_really, is_predictically] += 1
+
     print(confusion)
 
     # 0 -> TP, 1 -> TN, 2 -> FP, 3 -> FN
@@ -71,6 +79,20 @@ def main():
     print("FPos Rate: {}".format(fpos))
     print("F1: {}".format(f1))
 
+    # Graph ROC
+    TVP = roc_confusion[:,:,0,0] / (roc_confusion[:,:,0,0] + roc_confusion[:,:,0,1])
+    TFP = roc_confusion[:,:,1,0] / (roc_confusion[:,:,1,0] + roc_confusion[:,:,1,1])
+
+    for i in range(roc_confusion.shape[0]): 
+        plt.plot(TFP[i], TVP[i], linestyle='-', marker='o', label=CATS[i])
+
+    plt.xlabel("Taza de Falsos Positivos")
+    plt.ylabel("Taza de Verdaderos Positivos")
+    plt.title("Curva ROC")
+    plt.legend(loc="best", ncol=2)
+    plt.show()
+
+    plt.show()
 
 if __name__ == "__main__":
     main()
