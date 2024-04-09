@@ -86,12 +86,12 @@ def main():
     for i in range(roc_confusion.shape[0]): 
         plt.plot(TFP[i], TVP[i], linestyle='-', marker='o', label=CATS[i])
 
+    plt.plot([0, 1], [0, 1], linestyle='--')
+    
     plt.xlabel("Taza de Falsos Positivos")
     plt.ylabel("Taza de Verdaderos Positivos")
     plt.title("Curva ROC")
     plt.legend(loc="best", ncol=2)
-    plt.show()
-
     plt.show()
 
 if __name__ == "__main__":
