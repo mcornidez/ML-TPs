@@ -46,25 +46,13 @@ def main():
     print(1 - probs_admit2[index])
 
     # Probabilidad admision para caso rango = 2, gre = 450 y gpa = 3.5
-    condition = [0, 1, 1]
+    condition = [0, 1, 2]
     classes_admit, probs_admit = admit_conditional.calculate_conditional()
     index = np.where(list(map(lambda x: np.all(x), classes_admit == condition)))[0][0]
+    print(
+        "Probability of admission given a student studied in a rank 2 school, got a gre of 450 and a gpa of 3.5:"
+    )
     print(probs_admit[index])
-    condition = [1, 1, 1]
-    classes_admit, probs_admit = admit_conditional.calculate_conditional()
-    index = np.where(list(map(lambda x: np.all(x), classes_admit == condition)))[0][0]
-    print(probs_admit[index])
-    condition = [0, 0, 1]
-    classes_admit, probs_admit = admit_conditional.calculate_conditional()
-    index = np.where(list(map(lambda x: np.all(x), classes_admit == condition)))[0][0]
-    print(probs_admit[index])
-    condition = [1, 0, 1]
-    classes_admit, probs_admit = admit_conditional.calculate_conditional()
-    index = np.where(list(map(lambda x: np.all(x), classes_admit == condition)))[0][0]
-    print(probs_admit[index])
-    #print(
-    #    "Probability of admission given a student studied in a rank 2 school, got a gre of 450 and a gpa of 3.5:"
-    #)
 
 
 if __name__ == "__main__":
