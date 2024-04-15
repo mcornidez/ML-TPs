@@ -34,5 +34,19 @@ def main():
     print("P(gre = 1 ^ gpa = 0) =", comp_probs[2], " & P(gre = 1) * P(gpa = 0) = ", round(gre_probs[1] * gpa_probs[0], 7))
     print("P(gre = 1 ^ gpa = 1) =", comp_probs[3], "   & P(gre = 1) * P(gpa = 1) = ", round(gre_probs[1] * gpa_probs[1], 7))
 
+    gpa_conditional = ConditionalModel(
+        data[["gpa"]].to_numpy(), data[["rank", "gre"]].to_numpy()
+    )
+    classes_gpa, probs_gpa = gpa_conditional.calculate_conditional()
+    gre_conditional = ConditionalModel(
+        data[["gpa"]].to_numpy(), data[["rank"]].to_numpy()
+    )
+    classes_gre, probs_gre = gre_conditional.calculate_conditional()
+
+    print(classes_gre)
+    print(probs_gre)
+    print(classes_gpa)
+    print(probs_gpa)
+
 if __name__ == "__main__":
     main()
