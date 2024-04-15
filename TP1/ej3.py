@@ -21,6 +21,7 @@ def main():
     rank = 1
     admit_conditional = ConditionalModel(
         data[["admit"]].to_numpy(), data[["gre", "gpa", "rank"]].to_numpy()
+        #np.where(data[["admit"]].to_numpy() == 0, 1, 0), data[["gre", "gpa", "rank"]].to_numpy()
     )
     classes_admit, probs_admit = admit_conditional.calculate_conditional()
     gpa_conditional = ConditionalModel(
@@ -33,6 +34,7 @@ def main():
     classe_gre, probs_gre = gre_conditional.calculate_conditional()
     admit2_conditional = ConditionalModel(
         data[["admit"]].to_numpy(), data[["rank"]].to_numpy()
+        #np.where(data[["admit"]].to_numpy() == 0, 1, 0), data[["rank"]].to_numpy()
     )
     classes_admit2, probs_admit2 = admit2_conditional.calculate_conditional()
 
