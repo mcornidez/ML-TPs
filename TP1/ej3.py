@@ -11,6 +11,13 @@ def main():
     data["gre"] = data["gre"].apply(lambda x: 1 if x >= 500 else 0)
     data["gpa"] = data["gpa"].apply(lambda x: 1 if x >= 3 else 0)
 
+    ranks = list(data["rank"])
+    rank_counts = np.zeros(4)
+    for i in range(4):
+        rank_counts[i] = ranks.count(i+1)
+    total_count = len(ranks)
+    rank_probs = rank_counts/total_count
+
     rank = 1
     admit_conditional = ConditionalModel(
         data[["admit"]].to_numpy(), data[["gre", "gpa", "rank"]].to_numpy()
@@ -29,14 +36,13 @@ def main():
     )
     classes_admit2, probs_admit2 = admit2_conditional.calculate_conditional()
 
-
     ranks = list(map(lambda x: x[2], classes_admit))
     classified_admit_probs = np.zeros((4,4))
     for i in range(4):
         classified_admit_probs[i] = probs_admit[np.where(np.array(ranks) == i+1)[0]]
 
     # prods[rank-1][gre-1][gpa-1]
-    prods = (np.array([(1 - probs_gre) * (1 - probs_gpa), (1 - probs_gre) * probs_gpa, probs_gre * (1 - probs_gpa), probs_gre * probs_gpa]) * classified_admit_probs.transpose()).transpose()
+    prods = (np.array([(1 - probs_gre) * (1 - probs_gpa), (1 - probs_gre) * probs_gpa, probs_gre * (1 - probs_gpa), probs_gre * probs_gpa]) * rank_probs * classified_admit_probs.transpose()).transpose()
 
     print("Probability of rejection given a student studied in a rank 1 school:")
     print(prods[0].sum()/prods.sum())
