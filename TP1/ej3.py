@@ -19,7 +19,6 @@ def main():
     rank_probs = rank_counts/total_count
     print("Ranks probs:", rank_probs)
 
-    rank = 1
     admit_conditional = ConditionalModel(
         data[["admit"]].to_numpy(), data[["gre", "gpa", "rank"]].to_numpy()
     )
@@ -54,7 +53,8 @@ def main():
 
     # Probabilidad admision para caso rango = 2, gre = 450 y gpa = 3.5
     print(
-        f"Probability of admission given a student studied in a rank 2 school, got a gre of 450 and a gpa of 3.5: {probs_admit[5]}"
+        "Probability of admission given a student studied in a rank 2 school, got a gre of 450 and a gpa of 3.5:",
+        probs_admit[5]
     )
 
 
