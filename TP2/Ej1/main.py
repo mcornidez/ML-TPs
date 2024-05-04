@@ -9,22 +9,21 @@ def main():
     print(data[:10])
 
 
-
 if __name__ == "__main__":
     main()
 
-#Devuelve 
-def entropy_gain():
+#Ver en que formato recibe la data de la variable y el dataset
+#Se espera que devuelva una fila con los gains
+def entropy_gain(variable, data):
     pass
     
 
+#Se parte de que la variable con la que se clasifica esta en la primer posicion del arreglo
 class ID3:
-
     def __init__(self, data, gain):
         self.data = data
         self.gain = gain
         self.root = self.TreeNode(None, 0, self.data)
-        #Se parte de que la variable con la que se clasifica esta en la primer posicion del arreglo
         self.generate_tree()
 
     def generate_tree(self):
@@ -33,40 +32,36 @@ class ID3:
 
         while not nodes.empty():
             current_node = nodes.get()
-            subsets = self.partition_by_gain(current_node.data)
-            #Caso base con una unica clase
-            if(len(subsets) > 1):
-                for i, set in enumerate(subsets):
-                    child = self.TreeNode(current_node, current_node.depth+1, set)
+            if(len(current_node.data[0]) == 1):
+                continue
 
-                    if(len(set) == 0):
-                        child.classification = current_node.classify()
-                        continue
+            subsets = current_node.partition_by_gain(current_node.data)
+            for id, set in subsets.items():
+                if(len(set) == 0):
+                    continue
 
-                    if(np.all(set[0] == set[0][0])):
-                        child.classification = set[0][0]
-                    else:
-                        nodes.put(child)
+                child = self.TreeNode(current_node, id, current_node.depth+1, set)
 
-                    current_node.add_child(child)
+                #Mirar si set[0] es fila o columna
+                if(not np.all(set[:, 0] == set[0][0])):
+                    nodes.put(child)
 
-    # Devuelve un arreglo en el que cada elemento es una subset obtenido en base a la variable con mayor gain
-    # Solo devuelve un arreglo de un solo elemento si la unica varaible restante es la de clasificacion
-    def partition_by_gain(self, data):
-        pass
-
+                current_node.add_child(child)
 
     class TreeNode:
-        def __init__(self, father, depth, data):
+        def __init__(self, father, subset_id, depth, data):
             self.father = father
+            self.subset_id = subset_id 
             self.depth = depth
             self.data = data 
             self.children = []
             self.classification = None
+            self.subsets = None
 
         def add_child(self, child):
             self.children.append(child)
         
+        # Le asigna el valor de la clase que mas aparezca en el arreglo de clases
         def classify(self):
             if(not self.classification is None):
                 return self.classification
@@ -76,14 +71,20 @@ class ID3:
 
             self.classification = most_popular_elem
             return self.classification
+
+        def partition_by_gain(self):
+            if not self.subsets is None:
+                return self.subsets
+
+            gains = np.array(list(map(lambda x: entropy_gain(x, self.data), self.data.transpose())))
+
+            partition_var = self.data[:, np.argmax(gains)]
+
+
     
-    def classify(self, data):
-        pass
 
-
-
-#Ver como particionar variables: duration of credit, credit amount y age
-#Implementacion de ID3
-#Implementacion de gain de shannon
-#Implementacion de Random Forest
-#Implementacion de matrices
+#FALTA - Ver como particionar variables: duration of credit, credit amount y age
+#DONE - Implementacion de ID3
+#FALTA - Implementacion de gain de shannon
+#FALTA - Implementacion de Random Forest
+#FALTA - Implementacion de matrices
