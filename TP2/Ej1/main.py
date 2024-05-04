@@ -75,16 +75,21 @@ class ID3:
         def partition_by_gain(self):
             if not self.subsets is None:
                 return self.subsets
-
-            gains = np.array(list(map(lambda x: entropy_gain(x, self.data), self.data.transpose())))
-
-            partition_var = self.data[:, np.argmax(gains)]
+            gains = np.array(list(map(lambda x: entropy_gain(x, self.data[0]), self.data.transpose())))
+            max_gain_index = np.argmax(gains)
+            partition_col = self.data[:, max_gain_index]
+            classification_set = list(set(partition_col))
+            cropped_data = np.delete(self.data, max_gain_index, index=1)
+            partitions_indexes = list(map(lambda x: np.where(partition_col == x), classification_set))
+            subsets = list(map(lambda x: cropped_data[x], partitions_indexes))
+            self.subsets = {k: v for k, v in zip(classification_set, subsets)}
+            return self.subsets
 
 
     
 
 #FALTA - Ver como particionar variables: duration of credit, credit amount y age
-#DONE - Implementacion de ID3
+#FALTA - Implementacion de ID3
 #FALTA - Implementacion de gain de shannon
 #FALTA - Implementacion de Random Forest
 #FALTA - Implementacion de matrices
