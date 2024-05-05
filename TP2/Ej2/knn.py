@@ -3,7 +3,6 @@ from numpy.typing import NDArray
 from collections import Counter
 from abc import ABC
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class DataPoint:
