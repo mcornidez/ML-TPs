@@ -42,6 +42,8 @@ def prepare_data(df):
         )
     )
 
+    np.random.shuffle(data)
+
     divider = int(len(data) * PERCENTAGE)
 
     train = data[:divider]
