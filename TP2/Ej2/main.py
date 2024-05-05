@@ -1,22 +1,10 @@
 import pandas as pd
 import sys
+from metrics import Confusion
 from utils import wordcount_one_stars_mean, prepare_data
 from knn import KNN, BasicKNN, WeightedKNN
 
-
-def run_knn(knn: KNN, test):
-    yay = 0
-    nay = 0
-
-    for row in test:
-        expected, actual = knn.test(row)
-
-        if expected == actual:
-            yay += 1
-        else:
-            nay += 1
-
-    print(f"YAY: {yay}, NAY: {nay}")
+CATEGORIES = [1, 2, 3, 4, 5]
 
 
 def main(k):
@@ -27,13 +15,23 @@ def main(k):
 
     train, test = prepare_data(df)
 
-    print(f"Running basic knn with k = {k}")
+    runs_for_k = {}
 
-    run_knn(BasicKNN(k, train), test)
+    for k in range(1, 50):
+        runs_for_k[k] = []
 
-    print(f"Running weighted knn with k = {k}")
+        for _ in range(1, 10):
+            knn = BasicKNN(k, train)
+            confusion = Confusion(CATEGORIES)
 
-    run_knn(WeightedKNN(k, train), test)
+            for row in test:
+                expected, actual = knn.test(row)
+                confusion.add_run(expected, actual)
+
+            metrics = confusion.metrics()
+            runs_for_k[k].append(metrics.precision())
+
+        # print(confusion.matrix)
 
 
 if __name__ == "__main__":
