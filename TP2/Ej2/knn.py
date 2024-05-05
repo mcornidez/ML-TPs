@@ -91,4 +91,6 @@ class WeightedKNN(KNN):
     def get_distances(
         datapoints: List[DataPoint], datapoint: DataPoint
     ) -> List[Tuple[int, np.floating]]:
-        return [(p.classification, p.standard_distance(datapoint)) for p in datapoints]
+        # NOTE: standard_distance is not in use because it gives worse results (weird)
+        # return [(p.classification, p.standard_distance(datapoint)) for p in datapoints]
+        return [(p.classification, p.distance(datapoint)) for p in datapoints]
