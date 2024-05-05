@@ -7,7 +7,32 @@ import math
 def main():
     df = pd.read_csv("../Data/german_credit.csv", sep=",")
     #Hay que volver a usar esas columnas una vez que se clasifique bien esa data
-    df = df.drop(['Duration of Credit (month)', 'Credit Amount', 'Age (years)'], axis=1)
+
+    """ 
+    Duration of credit:
+        0 - < 12 meses
+        1 - de 12 a 36 meses
+        2 - de 36 a 60 meses
+        3 - > 60 meses
+
+    Credit amount:
+        0 - < 5000
+        1 - de 5000 a 10000
+        2 - de 10000 a 15000
+        3 - > 15000
+
+    Age:
+        0 - < 35 años
+        1 - de 35 a 45 años
+        2 - de 45 a 55 años
+        3 - > 55 años
+    """
+
+    df['Duration of Credit (month)'] = df['Duration of Credit (month)'].transform(lambda x: 0 if x < 12 else (1 if x <= 36 else (2 if x <= 60 else 3)))
+    df['Credit Amount'] = df['Credit Amount'].transform(lambda x: 0 if x < 5000 else (1 if x <= 10000 else (2 if x <= 15000 else 3)))
+    df['Age (years)'] = df['Age (years)'].transform(lambda x: 0 if x < 35 else (1 if x <= 45 else (2 if x <= 55 else 3)))
+
+    #df = df.drop(['Duration of Credit (month)', 'Credit Amount', 'Age (years)'], axis=1)
     data = df.to_numpy()
     np.random.shuffle(data)
 
@@ -22,6 +47,8 @@ def main():
     predict = list(map(lambda x: tree.classify(x, tags), test))
     print('porcentaje de aciertos')
     print(1 - sum(abs(predict-test[:, 0]))/len(predict))
+
+    randomForest(data, tags)
 
 
 
@@ -129,6 +156,29 @@ class ID3:
             partitions_indexes = list(map(lambda x: np.where(partition_col == x), classification_set))
             self.subsets = list(map(lambda x: cropped_data[x], partitions_indexes))
             return {k: v for k, v in zip(classification_set, self.subsets)}
+
+
+def randomForest(data, tags):
+    data_len = len(data)
+    perc = 0.8
+
+    forest = []
+    predictions = []
+
+    N = 10
+
+    for n in range(N):
+        np.random.shuffle(data)
+        train = data[:int(perc*data_len)]
+        test = data[int(perc*data_len):]
+        tree = ID3(train, tags, entropy_gain)
+        forest.append(tree)
+        predict = (list(map(lambda x: tree.classify(x, tags), test)))
+        predictions.append(1 - sum(abs(predict-test[:, 0]))/len(predict))
+        
+
+    print(predictions)
+
 
 
     
