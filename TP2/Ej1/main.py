@@ -9,8 +9,20 @@ def main():
     #Hay que volver a usar esas columnas una vez que se clasifique bien esa data
     df = df.drop(['Duration of Credit (month)', 'Credit Amount', 'Age (years)'], axis=1)
     data = df.to_numpy()
+    np.random.shuffle(data)
+
+    n = len(data)
+    perc = 0.8
+
+    train = data[:int(perc*n)]
+    test = data[int(perc*n):]
     tags = df.columns.to_list()
-    tree = ID3(data, tags, entropy_gain)
+    tree = ID3(train, tags, entropy_gain)
+
+    predict = list(map(lambda x: tree.classify(x, tags), test))
+    print('porcentaje de aciertos')
+    print(1 - sum(abs(predict-test[:, 0]))/len(predict))
+
 
 
 #Ver en que formato recibe la data de la variable y el dataset
@@ -49,11 +61,7 @@ class ID3:
             if(len(current_node.data[0]) == 1):
                 continue
             
-            print('pre')
-            print(len(current_node.data[0]))
-            print(len(current_node.remaining_tags))
             subsets = current_node.partition_by_gain()
-            print(len(current_node.remaining_tags))
             for id, set in subsets.items():
                 if(len(set) == 0):
                     continue
@@ -73,9 +81,13 @@ class ID3:
             if(len(current_node.children) == 0):
                 return current_node.get_classification()
             subset_id = point[point_tags.index(current_node.tag)]
+            found = False
             for child in current_node.children:
                 if child.subset_id == subset_id:
                     current_node = child
+                    found = True
+            if not found:
+                return current_node.father.get_classification()
 
     class TreeNode:
         def __init__(self, father, subset_id, depth, data, remaining_tags):
@@ -97,7 +109,7 @@ class ID3:
             if(not self.classification is None):
                 return self.classification
 
-            unique_elements, counts = np.unique(self.data[0], return_counts=True)
+            unique_elements, counts = np.unique(self.data[:, 0], return_counts=True)
             most_popular_elem = unique_elements[np.argmax(counts)]
 
             self.classification = most_popular_elem
@@ -116,8 +128,6 @@ class ID3:
             cropped_data = np.delete(self.data, max_gain_index, axis=1)
             partitions_indexes = list(map(lambda x: np.where(partition_col == x), classification_set))
             self.subsets = list(map(lambda x: cropped_data[x], partitions_indexes))
-            print('post')
-            print(list(map(lambda x: len(x[0]), self.subsets)))
             return {k: v for k, v in zip(classification_set, self.subsets)}
 
 
