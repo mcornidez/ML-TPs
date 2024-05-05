@@ -134,8 +134,8 @@ class ID3:
     
 
 #FALTA - Ver como particionar variables: duration of credit, credit amount y age
-#FALTA - Implementacion de ID3
-#FALTA - Implementacion de gain de shannon
+#CHECKEAR - Implementacion de ID3
+#CHECKEAR - Implementacion de gain de shannon
 #FALTA - Implementacion de Random Forest
 #FALTA - Implementacion de matrices
 
