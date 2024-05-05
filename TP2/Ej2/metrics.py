@@ -1,6 +1,7 @@
 from typing import Any, List
 import numpy as np
 from numpy.typing import NDArray
+import matplotlib.pyplot as plt
 
 
 class Metrics:
@@ -12,7 +13,9 @@ class Metrics:
         self.FN = metrics[3]
 
     def precision(self):
-        return self.TP / (self.TP + self.FP)
+        a = self.TP
+        b = self.TP + self.FP
+        return np.divide(a, b, out=np.zeros_like(a), where=b != 0)
 
     def accuracy(self):
         return (self.TP + self.TN) / (self.TP + self.TN + self.FP + self.FN)
@@ -56,3 +59,33 @@ class Confusion:
         self.stats = Metrics(metrics.transpose())
 
         return self.stats
+
+    def plot(self, name):
+        plt.figure()
+        plt.imshow(self.matrix, cmap="Blues", interpolation="nearest")
+        plt.title(name)
+        plt.colorbar()
+
+        plt.xlabel("Predicted")
+        plt.ylabel("Real")
+        plt.xticks(
+            np.arange(self.matrix.shape[1]),
+            list(map(str, range(1, self.matrix.shape[1] + 1))),
+        )
+        plt.yticks(
+            np.arange(self.matrix.shape[0]),
+            list(map(str, range(1, self.matrix.shape[0] + 1))),
+        )
+
+        for i in range(self.matrix.shape[0]):
+            for j in range(self.matrix.shape[1]):
+                plt.text(
+                    j,
+                    i,
+                    str(int(self.matrix[i, j])),
+                    ha="center",
+                    va="center",
+                    color="black",
+                )
+
+        plt.savefig(f"../Out/{name}.png")

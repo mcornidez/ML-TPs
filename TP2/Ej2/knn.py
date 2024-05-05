@@ -3,6 +3,7 @@ from numpy.typing import NDArray
 from collections import Counter
 from abc import ABC
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class DataPoint:
@@ -62,6 +63,9 @@ class BasicKNN(KNN):
     ) -> List[Tuple[int, np.floating]]:
         return [(p.classification, p.distance(datapoint)) for p in datapoints]
 
+    def __repr__(self) -> str:
+        return "Basic KNN"
+
 
 class WeightedKNN(KNN):
     @staticmethod
@@ -94,3 +98,6 @@ class WeightedKNN(KNN):
         # NOTE: standard_distance is not in use because it gives worse results (weird)
         # return [(p.classification, p.standard_distance(datapoint)) for p in datapoints]
         return [(p.classification, p.distance(datapoint)) for p in datapoints]
+
+    def __repr__(self) -> str:
+        return "Weighted distances KNN"

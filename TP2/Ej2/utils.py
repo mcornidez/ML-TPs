@@ -1,7 +1,5 @@
 import numpy as np
 
-PERCENTAGE = 0.8
-
 
 def wordcount_one_stars_mean(df):
     stars = df[["Star Rating", "wordcount"]].to_numpy()
@@ -42,11 +40,4 @@ def prepare_data(df):
         )
     )
 
-    np.random.shuffle(data)
-
-    divider = int(len(data) * PERCENTAGE)
-
-    train = data[:divider]
-    test = data[divider:]
-
-    return train, test
+    return data
