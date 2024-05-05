@@ -10,9 +10,8 @@ def main():
     df = df.drop(['Duration of Credit (month)', 'Credit Amount', 'Age (years)'], axis=1)
     data = df.to_numpy()
     tags = df.columns.to_list()
+    tree = ID3(data, tags, entropy_gain)
 
-if __name__ == "__main__":
-    main()
 
 #Ver en que formato recibe la data de la variable y el dataset
 #Se espera que devuelva una fila con los gains
@@ -20,13 +19,14 @@ def entropy_gain(variable, data):
     total_len = len(data)
     atribute_set = list(set(variable))
     atribute_indexes = list(map(lambda x: np.where(variable == x), atribute_set))
-    classifications = list(map(lambda x: data[x], atribute_indexes)).insert(data, 0)
+    classifications = [data] + list(map(lambda x: data[x], atribute_indexes))
+    #classifications = list(map(lambda x: data[x], atribute_indexes))
 
     lens = np.array(list(map(lambda x: len(x), classifications)))
     counts = np.array(list(map(lambda x: np.sum(x), classifications)))
     probs = counts/lens
     #Hay que usar el logaritmo con alguna base particular?
-    entropies = np.nan_to_num(probs * np.log(probs), 0) + np.nan_to_num((1-probs) * np.log(1-probs), 0)
+    entropies = probs * np.nan_to_num(np.log(probs), 0) + (1-probs) * np.nan_to_num(np.log(1-probs), 0)
     entropies[0] = -entropies[0]
     return np.sum(entropies * counts/total_len)
 
@@ -37,7 +37,7 @@ class ID3:
         self.data = data
         self.tags = tags
         self.gain = gain
-        self.root = self.TreeNode(None, 0, self.data)
+        self.root = self.TreeNode(None, None, 0, data, tags)
         self.generate_tree()
 
     def generate_tree(self):
@@ -48,8 +48,12 @@ class ID3:
             current_node = nodes.get()
             if(len(current_node.data[0]) == 1):
                 continue
-
-            subsets = current_node.partition_by_gain(current_node.data)
+            
+            print('pre')
+            print(len(current_node.data[0]))
+            print(len(current_node.remaining_tags))
+            subsets = current_node.partition_by_gain()
+            print(len(current_node.remaining_tags))
             for id, set in subsets.items():
                 if(len(set) == 0):
                     continue
@@ -102,18 +106,19 @@ class ID3:
         def partition_by_gain(self):
             if not self.subsets is None:
                 return self.subsets
-            gains = np.array(list(map(lambda x: entropy_gain(x, self.data[0]), self.data[:, 1:].transpose())))
-            max_gain_index = np.argmax(gains)
+            gains = np.array(list(map(lambda x: entropy_gain(x, self.data[:, 0].transpose()), self.data[:, 1:].transpose())))
+            max_gain_index = np.argmax(gains)+1
 
             partition_col = self.data[:, max_gain_index]
             classification_set = list(set(partition_col))
 
-            self.tag = self.remaining_tags.pop(max_gain_index)
-            cropped_data = np.delete(self.data, max_gain_index, index=1)
+            self.tag = list(self.remaining_tags).pop(max_gain_index)
+            cropped_data = np.delete(self.data, max_gain_index, axis=1)
             partitions_indexes = list(map(lambda x: np.where(partition_col == x), classification_set))
-            subsets = list(map(lambda x: cropped_data[x], partitions_indexes))
-            self.subsets = {k: v for k, v in zip(classification_set, subsets)}
-            return self.subsets
+            self.subsets = list(map(lambda x: cropped_data[x], partitions_indexes))
+            print('post')
+            print(list(map(lambda x: len(x[0]), self.subsets)))
+            return {k: v for k, v in zip(classification_set, self.subsets)}
 
 
     
@@ -123,3 +128,6 @@ class ID3:
 #FALTA - Implementacion de gain de shannon
 #FALTA - Implementacion de Random Forest
 #FALTA - Implementacion de matrices
+
+if __name__ == "__main__":
+    main()
