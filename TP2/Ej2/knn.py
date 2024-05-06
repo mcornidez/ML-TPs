@@ -53,8 +53,16 @@ class KNN(ABC):
 class BasicKNN(KNN):
     @staticmethod
     def estimate_class(neighbors: List[Tuple[int, np.floating]]) -> int:
-        ns = [dist[0] for dist in neighbors]
-        return Counter(ns).most_common()[0][0]
+        counts = {}
+        for n, distance in neighbors:
+            if n not in counts:
+                counts[n] = [0, 0]
+
+            counts[n][0] += 1
+            # NOTE: Use the distance to keep the nearest in tie
+            counts[n][1] -= distance
+
+        return max(zip(counts.values(), counts.keys()))[1]
 
     @staticmethod
     def get_distances(
@@ -79,8 +87,11 @@ class WeightedKNN(KNN):
             weight = 1 / (distance**2)
 
             if n not in counts:
-                counts[n] = 0
-            counts[n] += weight
+                counts[n] = [0, 0]
+
+            counts[n][0] += weight
+            # NOTE: Use the distance to keep the nearest in tie
+            counts[n][1] -= distance
 
         match len(zeros):
             case 0:

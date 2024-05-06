@@ -1,9 +1,13 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
 from metrics import Confusion
 from utils import wordcount_one_stars_mean, prepare_data
 from knn import BasicKNN, WeightedKNN
+
+os.makedirs("./Out", exist_ok=True)
 
 CATEGORIES = [1, 2, 3, 4, 5]
 
@@ -21,13 +25,14 @@ def divide_data(data):
     return train, test
 
 
-def run_knn(data, knn_gen):
+def run_knn(data, knn_gen, k_start, k_end, runs):
     runs_for_k = {}
 
-    for k in range(1, 50, 2):
+    for k in range(k_start, k_end + 1, 2):
+        print(k)
         runs_for_k[k] = []
 
-        for _ in range(1, 10):
+        for _ in range(runs):
             train, test = divide_data(data)
 
             knn = knn_gen(k, train)
@@ -42,7 +47,7 @@ def run_knn(data, knn_gen):
 
     train, test = divide_data(data)
 
-    for k in [1, 5, 15, 25, 49]:
+    for k in [1, 5, 15, 25, 49, 75, 99]:
         knn = knn_gen(k, train)
         confusion = Confusion(CATEGORIES)
 
@@ -64,10 +69,10 @@ def plot_precision(runs, name):
 
     plt.figure()
     plt.errorbar(ks, means, yerr=stds, fmt="-o")
+    plt.ylim(0, 1)
     plt.xlabel("K")
     plt.ylabel("Precision")
     plt.title(name)
-    plt.xticks(ks)
     plt.grid(True)
 
     plt.savefig(f"../Out/{name}.png")
@@ -108,11 +113,13 @@ def main():
 
     data = prepare_data(df)
 
-    runs = run_knn(data, BasicKNN)
+    print("Running basic KNN for k between 1 and 49")
+    runs = run_knn(data, BasicKNN, 1, 99, 20)
 
     plot_precision(runs, "Basic KNN precision")
 
-    runs = run_knn(data, WeightedKNN)
+    print("Running weighted distances KNN for k between 1 and 49")
+    runs = run_knn(data, WeightedKNN, 1, 99, 20)
 
     plot_precision(runs, "Weighted KNN precision")
 
