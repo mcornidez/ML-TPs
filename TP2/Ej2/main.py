@@ -11,16 +11,18 @@ os.makedirs("./Out", exist_ok=True)
 
 CATEGORIES = [1, 2, 3, 4, 5]
 
+rng = np.random.default_rng()
+
 
 def divide_data(data):
-    np.random.shuffle(data)
+    sample = rng.choice(data, replace=True, size=len(data))
 
     PERCENTAGE = 0.8
 
-    divider = int(len(data) * PERCENTAGE)
+    divider = int(len(sample) * PERCENTAGE)
 
-    train = data[:divider]
-    test = data[divider:]
+    train = sample[:divider]
+    test = sample[divider:]
 
     return train, test
 
