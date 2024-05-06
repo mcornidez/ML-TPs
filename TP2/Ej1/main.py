@@ -199,6 +199,9 @@ def getPrecision(tree, data, tags):  # type: ignore
     return accuracy
 
 
+rng = np.random.default_rng()
+
+
 def randomForest(data, tags):
     data_len = len(data)
     perc = 0.8
@@ -210,11 +213,11 @@ def randomForest(data, tags):
 
     for n in range(N):
         # Mezclo los datos
-        np.random.shuffle(data)
+        sample = rng.choice(data, replace=True, size=data_len)
 
         # Separo en train y test
-        train = data[: int(perc * data_len)]
-        test = data[int(perc * data_len) :]
+        train = sample[: int(perc * data_len)]
+        test = sample[int(perc * data_len) :]
 
         precision_depth = []
 
@@ -272,18 +275,18 @@ def confusion_matrix(expected, actual):
 def plot_confusion_matrix(matrix, depth):
     plt.figure()
     plt.imshow(matrix, cmap="Blues", interpolation="nearest")
-    plt.title("Matriz de confusión árbol {depth}")
+    plt.title(f"Matriz de confusión árbol {depth}")
     plt.colorbar()
 
     plt.xlabel("Predicted")
     plt.ylabel("Real")
     plt.xticks(
         np.arange(matrix.shape[1]),
-        list(map(str, range(1, matrix.shape[1] + 1))),
+        list(map(str, range(matrix.shape[1]))),
     )
     plt.yticks(
         np.arange(matrix.shape[0]),
-        list(map(str, range(1, matrix.shape[0] + 1))),
+        list(map(str, range(matrix.shape[0]))),
     )
 
     for i in range(matrix.shape[0]):
