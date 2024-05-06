@@ -210,6 +210,7 @@ def randomForest(data, tags):
     N = 10
 
     MAX_DEPTH = 10
+    precisions = [] 
 
     for n in range(N):
         # Mezclo los datos
@@ -236,18 +237,15 @@ def randomForest(data, tags):
             precision_depth.append((depth, precision))
 
             # Plot de la matriz de confusión
-            plot_confusion_matrix(matrix, depth)
+            #plot_confusion_matrix(matrix, depth, n+1)
 
-        # Graficar la precisión vs profundidad para este árbol
-        plt.figure()
-        depths, precisions = zip(*precision_depth)
-        plt.plot(depths, precisions, label=f"Tree {n+1}")
+        #plot_tree_vs_depth_individual(precision_depth, n)
 
-        plt.xlabel("Depth")
-        plt.ylabel("Precision")
-        plt.title(f"Precision vs. Depth - Tree {n+1}")
-        plt.legend()
-        plt.savefig(f"Out/precision_{n+1}.png")
+        precisions.append(precision_depth)
+
+    plot_tree_vs_depth_random_forest(precision_depth, precisions)
+
+    plot_average_precision(precisions)
 
 
 def confusion_matrix(expected, actual):
@@ -272,7 +270,7 @@ def confusion_matrix(expected, actual):
     return matrix
 
 
-def plot_confusion_matrix(matrix, depth):
+def plot_confusion_matrix(matrix, depth, tree):
     plt.figure()
     plt.imshow(matrix, cmap="Blues", interpolation="nearest")
     plt.title(f"Matriz de confusión árbol {depth}")
@@ -300,7 +298,7 @@ def plot_confusion_matrix(matrix, depth):
                 color="black",
             )
 
-    plt.savefig(f"Out/matrix_{depth}.png")
+    plt.savefig(f"Out/matrix_tree_{tree}_depth_{depth}.png")
 
 
 def getPrecision(TP, FP):
@@ -309,6 +307,58 @@ def getPrecision(TP, FP):
     if a == 0:
         return 0
     return a / b
+
+def plot_average_precision(precisions):
+    plt.figure()
+
+    # Calcular el promedio y la desviación estándar de las precisiones para cada profundidad
+    avg_precisions = {}
+    for precision_depth_list in precisions:
+        for depth, precision in precision_depth_list:
+            if depth not in avg_precisions:
+                avg_precisions[depth] = []
+            avg_precisions[depth].append(precision)
+
+    avg_depths = []
+    avg_values = []
+    std_values = []
+    for depth, precision_list in avg_precisions.items():
+        avg_depths.append(depth)
+        avg_values.append(np.mean(precision_list))
+        std_values.append(np.std(precision_list))
+
+    # Plotear la línea del promedio de las precisiones con barras de error
+    plt.errorbar(avg_depths, avg_values, yerr=std_values, fmt='-o')
+
+    plt.xlabel("Depth")
+    plt.ylabel("Precision")
+    #plt.ylim(0,1)
+    plt.title("Average Precision vs. Depth")
+    plt.legend()
+    plt.savefig(f"Out/avg_precision_random_forest.png")
+
+def plot_tree_vs_depth_individual(precision_depth, n):
+    plt.figure()
+    depths, precisions_values = zip(*precision_depth)
+    plt.plot(depths, precisions_values, label=f"Tree {n+1}")
+
+    plt.xlabel("Depth")
+    plt.ylabel("Precision")
+    plt.title(f"Precision vs. Depth - Tree {n+1}")
+    plt.legend()
+    plt.savefig(f"Out/precision_tree_{n+1}.png")
+
+def plot_tree_vs_depth_random_forest(precision_depth, precisions):
+    plt.figure()
+    for i, precision_depth in enumerate(precisions):
+        depths, precisions = zip(*precision_depth)
+        plt.plot(depths, precisions, label=f"Tree {i+1}")
+
+    plt.xlabel("Depth")
+    plt.ylabel("Precision")
+    plt.title("Precision vs. Depth")
+    plt.legend()
+    plt.savefig(f"Out/precision_random_forest.png")
 
 
 # FALTA - Ver como particionar variables: duration of credit, credit amount y age
