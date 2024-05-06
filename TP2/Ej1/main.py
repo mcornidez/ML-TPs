@@ -1,3 +1,4 @@
+import copy
 import pandas as pd
 import numpy as np
 import queue
@@ -52,6 +53,9 @@ def main():
 
     randomForest(data, tags)
 
+    for tag, col in zip(tags[1:], data.T[1:]):
+        print(f"{tag}: {entropy_gain(col, data.T[0])}")
+
 
 # Ver en que formato recibe la data de la variable y el dataset
 # Se espera que devuelva una fila con los gains
@@ -60,7 +64,6 @@ def entropy_gain(variable, data):
     atribute_set = list(set(variable))
     atribute_indexes = list(map(lambda x: np.where(variable == x), atribute_set))
     classifications = [data] + list(map(lambda x: data[x], atribute_indexes))
-    # classifications = list(map(lambda x: data[x], atribute_indexes))
 
     lens = np.array(list(map(lambda x: len(x), classifications)))
     counts = np.array(list(map(lambda x: np.sum(x), classifications)))
@@ -77,9 +80,8 @@ def entropy_gain(variable, data):
 class ID3:
     def __init__(self, data, tags, gain):
         self.data = data
-        self.tags = tags
         self.gain = gain
-        self.root = self.TreeNode(None, None, 0, data, tags)
+        self.root = self.TreeNode(None, None, 0, data, copy.deepcopy(tags))
         self.generate_tree()
 
     def generate_tree(self):
@@ -101,10 +103,9 @@ class ID3:
                     id,
                     current_node.depth + 1,
                     set,
-                    current_node.remaining_tags,
+                    copy.deepcopy(current_node.remaining_tags),
                 )
 
-                # Mirar si set[0] es fila o columna
                 if not np.all(set[:, 0] == set[0][0]):
                     nodes.put(child)
 
@@ -170,7 +171,7 @@ class ID3:
             partition_col = self.data[:, max_gain_index]
             classification_set = list(set(partition_col))
 
-            self.tag = list(self.remaining_tags).pop(max_gain_index)
+            self.tag = self.remaining_tags.pop(max_gain_index)
             cropped_data = np.delete(self.data, max_gain_index, axis=1)
             partitions_indexes = list(
                 map(lambda x: np.where(partition_col == x), classification_set)
@@ -192,13 +193,18 @@ rng = np.random.default_rng()
 
 
 def randomForest(data, tags):
+    # NOTE: Uncomment to balance data
+    # accepted = data[data[:, 0] == 1][:400]
+    # rejected = data[data[:, 0] == 0]
+    # data = np.concatenate((accepted, rejected))
+
     data_len = len(data)
     perc = 0.8
 
     # Cantidad de arboles del forest
-    N = 10
+    N = 20
 
-    MAX_DEPTH = 10
+    MAX_DEPTH = 15
     precisions = []
 
     for n in range(N):

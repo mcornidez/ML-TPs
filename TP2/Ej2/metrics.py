@@ -13,9 +13,7 @@ class Metrics:
         self.FN = metrics[3]
 
     def precision(self):
-        a = self.TP
-        b = self.TP + self.FP
-        return np.divide(a, b, out=np.zeros_like(a), where=b != 0)
+        return np.ma.divide(self.TP, self.TP + self.FP).filled(0)
 
     def accuracy(self):
         return (self.TP + self.TN) / (self.TP + self.TN + self.FP + self.FN)
