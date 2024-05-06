@@ -45,21 +45,10 @@ def main():
         lambda x: 0 if x < 35 else (1 if x <= 45 else (2 if x <= 55 else 3))
     )
 
-    # df = df.drop(['Duration of Credit (month)', 'Credit Amount', 'Age (years)'], axis=1)
     data = df.to_numpy()
     np.random.shuffle(data)
 
-    n = len(data)
-    perc = 0.8
-
-    train = data[: int(perc * n)]
-    test = data[int(perc * n) :]
     tags = df.columns.to_list()
-    tree = ID3(train, tags, entropy_gain)
-
-    # predict = list(map(lambda x: tree.classify(x, tags), test))
-    # print('porcentaje de aciertos')
-    # print(1 - sum(abs(predict-test[:, 0]))/len(predict))
 
     randomForest(data, tags)
 
@@ -76,22 +65,21 @@ def entropy_gain(variable, data):
     lens = np.array(list(map(lambda x: len(x), classifications)))
     counts = np.array(list(map(lambda x: np.sum(x), classifications)))
     probs = counts / lens
-    # Hay que usar el logaritmo con alguna base particular?
-    entropies = probs * np.nan_to_num(np.log2(probs)) + (1 - probs) * np.nan_to_num(
-        np.log2(1 - probs)
-    )
+
+    entropies = probs * np.ma.log2(probs).filled(0) + (1 - probs) * np.ma.log2(
+        1 - probs
+    ).filled(0)
     entropies[0] = -entropies[0]
     return np.sum(entropies * counts / total_len)
 
 
 # Se parte de que la variable con la que se clasifica esta en la primer posicion del arreglo
 class ID3:
-    def __init__(self, data, tags, gain, max_depth=None):
+    def __init__(self, data, tags, gain):
         self.data = data
         self.tags = tags
         self.gain = gain
         self.root = self.TreeNode(None, None, 0, data, tags)
-        self.max_depth = max_depth
         self.generate_tree()
 
     def generate_tree(self):
@@ -100,8 +88,6 @@ class ID3:
 
         while not nodes.empty():
             current_node = nodes.get()
-            if self.max_depth is not None and current_node.depth >= self.max_depth:
-                continue
             if len(current_node.data[0]) == 1:
                 continue
 
@@ -124,10 +110,13 @@ class ID3:
 
                 current_node.add_child(child)
 
-    def classify(self, point, point_tags):
+    def classify(self, point, point_tags, max_depth=None):
         current_node = self.root
 
         while True:
+            if max_depth is not None and current_node.depth == max_depth:
+                return current_node.get_classification()
+
             if len(current_node.children) == 0:
                 return current_node.get_classification()
             subset_id = point[point_tags.index(current_node.tag)]
@@ -210,7 +199,7 @@ def randomForest(data, tags):
     N = 10
 
     MAX_DEPTH = 10
-    precisions = [] 
+    precisions = []
 
     for n in range(N):
         # Mezclo los datos
@@ -222,13 +211,12 @@ def randomForest(data, tags):
 
         precision_depth = []
 
+        tree = ID3(train, tags, entropy_gain)
+
         # Iterar sobre diferentes profundidades del árbol
         for depth in range(1, MAX_DEPTH + 1):
-            # Construir el árbol con la profundidad actual
-            tree = ID3(train, tags, entropy_gain, max_depth=depth)
-
-            # Predecir usando el árbol
-            actual = [tree.classify(x, tags) for x in test]
+            # Predecir usando el árbol con la profundidad actual
+            actual = [tree.classify(x, tags, depth) for x in test]
             expected = [x[0] for x in test]
 
             matrix = confusion_matrix(expected, actual)
@@ -236,16 +224,24 @@ def randomForest(data, tags):
 
             precision_depth.append((depth, precision))
 
-            # Plot de la matriz de confusión
-            #plot_confusion_matrix(matrix, depth, n+1)
-
-        #plot_tree_vs_depth_individual(precision_depth, n)
-
         precisions.append(precision_depth)
 
-    plot_tree_vs_depth_random_forest(precision_depth, precisions)
+    plot_tree_vs_depth_random_forest(precisions)
 
     plot_average_precision(precisions)
+
+    sample = rng.choice(data, replace=True, size=data_len)
+    train = sample[: int(perc * data_len)]
+    test = sample[int(perc * data_len) :]
+    tree = ID3(train, tags, entropy_gain)
+
+    for depth in range(1, MAX_DEPTH + 1):
+        actual = [tree.classify(x, tags, depth) for x in test]
+        expected = [x[0] for x in test]
+
+        matrix = confusion_matrix(expected, actual)
+
+        plot_confusion_matrix(matrix, depth)
 
 
 def confusion_matrix(expected, actual):
@@ -270,10 +266,10 @@ def confusion_matrix(expected, actual):
     return matrix
 
 
-def plot_confusion_matrix(matrix, depth, tree):
+def plot_confusion_matrix(matrix, depth):
     plt.figure()
     plt.imshow(matrix, cmap="Blues", interpolation="nearest")
-    plt.title(f"Matriz de confusión árbol {depth}")
+    plt.title(f"Matriz de confusión profundidad {depth}")
     plt.colorbar()
 
     plt.xlabel("Predicted")
@@ -298,7 +294,7 @@ def plot_confusion_matrix(matrix, depth, tree):
                 color="black",
             )
 
-    plt.savefig(f"Out/matrix_tree_{tree}_depth_{depth}.png")
+    plt.savefig(f"Out/matrix_tree_depth_{depth}.png")
 
 
 def getPrecision(TP, FP):
@@ -307,6 +303,7 @@ def getPrecision(TP, FP):
     if a == 0:
         return 0
     return a / b
+
 
 def plot_average_precision(precisions):
     plt.figure()
@@ -328,14 +325,14 @@ def plot_average_precision(precisions):
         std_values.append(np.std(precision_list))
 
     # Plotear la línea del promedio de las precisiones con barras de error
-    plt.errorbar(avg_depths, avg_values, yerr=std_values, fmt='-o')
+    plt.errorbar(avg_depths, avg_values, yerr=std_values, fmt="-o")
 
     plt.xlabel("Depth")
     plt.ylabel("Precision")
-    #plt.ylim(0,1)
+    # plt.ylim(0,1)
     plt.title("Average Precision vs. Depth")
-    plt.legend()
     plt.savefig(f"Out/avg_precision_random_forest.png")
+
 
 def plot_tree_vs_depth_individual(precision_depth, n):
     plt.figure()
@@ -345,10 +342,10 @@ def plot_tree_vs_depth_individual(precision_depth, n):
     plt.xlabel("Depth")
     plt.ylabel("Precision")
     plt.title(f"Precision vs. Depth - Tree {n+1}")
-    plt.legend()
     plt.savefig(f"Out/precision_tree_{n+1}.png")
 
-def plot_tree_vs_depth_random_forest(precision_depth, precisions):
+
+def plot_tree_vs_depth_random_forest(precisions):
     plt.figure()
     for i, precision_depth in enumerate(precisions):
         depths, precisions = zip(*precision_depth)
