@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import queue
 import math
+import matplotlib.pyplot as plt
+
+#si devolvió el crédito (1) o no (0)
+categories = [1, 0]
 
 
 def main():
@@ -44,9 +48,9 @@ def main():
     tags = df.columns.to_list()
     tree = ID3(train, tags, entropy_gain)
 
-    predict = list(map(lambda x: tree.classify(x, tags), test))
-    print('porcentaje de aciertos')
-    print(1 - sum(abs(predict-test[:, 0]))/len(predict))
+    #predict = list(map(lambda x: tree.classify(x, tags), test))
+    #print('porcentaje de aciertos')
+    #print(1 - sum(abs(predict-test[:, 0]))/len(predict))
 
     randomForest(data, tags)
 
@@ -72,11 +76,12 @@ def entropy_gain(variable, data):
 
 #Se parte de que la variable con la que se clasifica esta en la primer posicion del arreglo
 class ID3:
-    def __init__(self, data, tags, gain):
+    def __init__(self, data, tags, gain, max_depth=None):
         self.data = data
         self.tags = tags
         self.gain = gain
         self.root = self.TreeNode(None, None, 0, data, tags)
+        self.max_depth = max_depth
         self.generate_tree()
 
     def generate_tree(self):
@@ -85,6 +90,8 @@ class ID3:
 
         while not nodes.empty():
             current_node = nodes.get()
+            if self.max_depth is not None and current_node.depth >= self.max_depth:
+                continue
             if(len(current_node.data[0]) == 1):
                 continue
             
@@ -156,31 +163,114 @@ class ID3:
             partitions_indexes = list(map(lambda x: np.where(partition_col == x), classification_set))
             self.subsets = list(map(lambda x: cropped_data[x], partitions_indexes))
             return {k: v for k, v in zip(classification_set, self.subsets)}
+        
+def getPrecision(tree, data, tags):
+    predictions = [tree.classify(x, tags) for x in data]
+    true_labels = [x[0] for x in data]
+    accuracy = sum(1 for i in range(len(data)) if true_labels[i] == predictions[i]) / len(data)
+    return accuracy
+
 
 
 def randomForest(data, tags):
     data_len = len(data)
     perc = 0.8
 
-    forest = []
-    predictions = []
-
+    #Cantidad de arboles del forest
     N = 10
 
+    MAX_DEPTH = 10
+
     for n in range(N):
+        #Mezclo los datos
         np.random.shuffle(data)
+
+        #Separo en train y test
         train = data[:int(perc*data_len)]
         test = data[int(perc*data_len):]
-        tree = ID3(train, tags, entropy_gain)
-        forest.append(tree)
-        predict = (list(map(lambda x: tree.classify(x, tags), test)))
-        predictions.append(1 - sum(abs(predict-test[:, 0]))/len(predict))
+
+        precision_depth = []
+
+        # Iterar sobre diferentes profundidades del árbol
+        for depth in range(1, MAX_DEPTH+1):
+            # Construir el árbol con la profundidad actual
+            tree = ID3(train, tags, entropy_gain, max_depth=depth)
+
+            # Predecir usando el árbol
+            actual = [tree.classify(x, tags) for x in test]
+            expected = [x[0] for x in test]
+
+            matrix = confusion_matrix(expected, actual)
+            precision = getPrecision(matrix[0][0], matrix[0][1])
+
+            precision_depth.append((depth, precision))
+
+            # Plot de la matriz de confusión
+            plot_confusion_matrix(matrix, depth)
+
+        # Graficar la precisión vs profundidad para este árbol
+        plt.figure()
+        depths, precisions = zip(*precision_depth)
+        plt.plot(depths, precisions, label=f"Tree {n+1}")
+
+        plt.xlabel("Depth")
+        plt.ylabel("Precision")
+        plt.title(f"Precision vs. Depth - Tree {n+1}")
+        plt.legend()
+        plt.savefig(f"Out/precision_{n+1}.png")
+
+
+
+def confusion_matrix(expected, actual):
+    # 0 -> TP, 1 -> TN, 2 -> FP, 3 -> FN
+    matrix = np.zeros((2, 2))
+    #TP
+    matrix[0][0] = (sum((expected[i] == 1) and (actual[i] == 1) for i in range(len(expected))))
+    #TN
+    matrix[1][1] = (sum((expected[i] == 0) and (actual[i] == 0) for i in range(len(expected))))
+    #FP
+    matrix[0][1] = (sum((expected[i] == 0) and (actual[i] == 1) for i in range(len(expected))))
+    #FN
+    matrix[1][0] = (sum((expected[i] == 1) and (actual[i] == 0) for i in range(len(expected))))
+    return matrix
+
+def plot_confusion_matrix(matrix, depth):
+        plt.figure()
+        plt.imshow(matrix, cmap="Blues", interpolation="nearest")
+        plt.title("Matriz de confusión árbol {depth}")
+        plt.colorbar()
+
+        plt.xlabel("Predicted")
+        plt.ylabel("Real")
+        plt.xticks(
+            np.arange(matrix.shape[1]),
+            list(map(str, range(1, matrix.shape[1] + 1))),
+        )
+        plt.yticks(
+            np.arange(matrix.shape[0]),
+            list(map(str, range(1, matrix.shape[0] + 1))),
+        )
+
+        for i in range(matrix.shape[0]):
+            for j in range(matrix.shape[1]):
+                plt.text(
+                    j,
+                    i,
+                    str(int(matrix[i, j])),
+                    ha="center",
+                    va="center",
+                    color="black",
+                )
+
+        plt.savefig(f"Out/matrix_{depth}.png")
+
+def getPrecision(TP, FP):
+    a = TP
+    b = TP + FP
+    if (a == 0):
+        return 0
+    return a/b
         
-
-    print(predictions)
-
-
-
     
 
 #FALTA - Ver como particionar variables: duration of credit, credit amount y age
