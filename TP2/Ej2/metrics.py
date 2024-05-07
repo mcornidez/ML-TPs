@@ -86,4 +86,4 @@ class Confusion:
                     color="black",
                 )
 
-        plt.savefig(f"../Out/{name}.png")
+        plt.savefig(f"./Out/{name}.png")

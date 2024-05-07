@@ -8,7 +8,6 @@ import numpy as np
 class DataPoint:
     def __init__(self, data: NDArray[np.floating], classification: int):
         self.data = data
-        self.std_data = (data - data.mean()) / data.std()
         self.classification = classification
 
     def __repr__(self) -> str:
@@ -16,9 +15,6 @@ class DataPoint:
 
     def distance(self, other) -> np.floating:
         return np.linalg.norm(self.data - other.data)
-
-    def standard_distance(self, other) -> np.floating:
-        return np.linalg.norm(self.std_data - other.std_data)
 
 
 class KNN(ABC):
@@ -30,7 +26,7 @@ class KNN(ABC):
         expected = row[-1]
         datapoint = DataPoint(row[:-1], expected)
 
-        distances = self.get_distances(self.datapoints, datapoint)
+        distances = [(p.classification, p.distance(datapoint)) for p in self.datapoints]
 
         distances.sort(key=lambda t: t[1])
         neighbors = distances[: self.k]
@@ -43,32 +39,20 @@ class KNN(ABC):
     def estimate_class(neighbors: List[Tuple[int, np.floating]]) -> int:
         raise
 
-    @staticmethod
-    def get_distances(
-        datapoints: List[DataPoint], datapoint: DataPoint
-    ) -> List[Tuple[int, np.floating]]:
-        raise
-
 
 class BasicKNN(KNN):
     @staticmethod
     def estimate_class(neighbors: List[Tuple[int, np.floating]]) -> int:
         counts = {}
-        for n, distance in neighbors:
-            if n not in counts:
-                counts[n] = [0, 0]
+        for c, distance in neighbors:
+            if c not in counts:
+                counts[c] = [0, 0]
 
-            counts[n][0] += 1
+            counts[c][0] += 1
             # NOTE: Use the distance to keep the nearest in tie
-            counts[n][1] -= distance
+            counts[c][1] -= distance
 
         return max(zip(counts.values(), counts.keys()))[1]
-
-    @staticmethod
-    def get_distances(
-        datapoints: List[DataPoint], datapoint: DataPoint
-    ) -> List[Tuple[int, np.floating]]:
-        return [(p.classification, p.distance(datapoint)) for p in datapoints]
 
     def __repr__(self) -> str:
         return "Basic KNN"
@@ -79,19 +63,19 @@ class WeightedKNN(KNN):
     def estimate_class(neighbors: List[Tuple[int, np.floating]]) -> int:
         counts = {}
         zeros = []
-        for n, distance in neighbors:
+        for c, distance in neighbors:
             if distance == 0:
-                zeros.append(n)
+                zeros.append(c)
                 continue
 
             weight = 1 / (distance**2)
 
-            if n not in counts:
-                counts[n] = [0, 0]
+            if c not in counts:
+                counts[c] = [0, 0]
 
-            counts[n][0] += weight
+            counts[c][0] += weight
             # NOTE: Use the distance to keep the nearest in tie
-            counts[n][1] -= distance
+            counts[c][1] -= distance
 
         match len(zeros):
             case 0:
@@ -100,14 +84,6 @@ class WeightedKNN(KNN):
                 return zeros[0]
             case _:
                 return Counter(zeros).most_common()[0][0]
-
-    @staticmethod
-    def get_distances(
-        datapoints: List[DataPoint], datapoint: DataPoint
-    ) -> List[Tuple[int, np.floating]]:
-        # NOTE: standard_distance is not in use because it gives worse results (weird)
-        # return [(p.classification, p.standard_distance(datapoint)) for p in datapoints]
-        return [(p.classification, p.distance(datapoint)) for p in datapoints]
 
     def __repr__(self) -> str:
         return "Weighted distances KNN"

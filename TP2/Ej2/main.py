@@ -1,3 +1,4 @@
+import copy
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,11 +28,12 @@ def divide_data(data):
     return train, test
 
 
-def run_knn(data, knn_gen, k_start, k_end, runs):
+def run_knn(data, knn_gen, k_start, k_end, runs, standarized=False):
     runs_for_k = {}
 
+    print("Progress (k):")
     for k in range(k_start, k_end + 1, 2):
-        print(k)
+        print(k, end=" ", flush=True)
         runs_for_k[k] = []
 
         for _ in range(runs):
@@ -46,7 +48,12 @@ def run_knn(data, knn_gen, k_start, k_end, runs):
 
             metrics = confusion.metrics()
             runs_for_k[k].append(metrics.precision())
+    print()
 
+    return runs_for_k
+
+
+def plot_confusions(data, knn_gen):
     train, test = divide_data(data)
 
     for k in [1, 5, 15, 25, 49, 75, 99]:
@@ -59,7 +66,21 @@ def run_knn(data, knn_gen, k_start, k_end, runs):
 
         confusion.plot(f"{str(knn)} for K = {k}")
 
-    return runs_for_k
+    for i in range(3):
+        train_col = train[:, i]
+        test_col = test[:, i]
+        train[:, i] = (train_col - train_col.mean()) / train_col.std()
+        test[:, i] = (test_col - test_col.mean()) / test_col.std()
+
+    for k in [1, 5, 15, 25, 49, 75, 99]:
+        knn = knn_gen(k, train)
+        confusion = Confusion(CATEGORIES)
+
+        for row in test:
+            expected, actual = knn.test(row)
+            confusion.add_run(expected, actual)
+
+        confusion.plot(f"{str(knn)} for K = {k} standarized")
 
 
 def plot_precision(runs, name):
@@ -77,10 +98,10 @@ def plot_precision(runs, name):
     plt.title(name)
     plt.grid(True)
 
-    plt.savefig(f"../Out/{name}.png")
+    plt.savefig(f"./Out/{name}.png")
 
 
-def plot_datapoints(datapoints):
+def plot_datapoints(datapoints, standarized=False):
     data = {}
     for row in datapoints:
         category = row[-1]
@@ -104,7 +125,7 @@ def plot_datapoints(datapoints):
     ax.set_ylabel("Title Sentiment")
     ax.set_zlabel("Sentiment Value")  # type: ignore
 
-    plt.savefig(f"../Out/3D.png")
+    plt.savefig(f"./Out/3D{' standarized' if standarized else ''}.png")
 
 
 def main():
@@ -115,17 +136,37 @@ def main():
 
     data = prepare_data(df)
 
-    print("Running basic KNN for k between 1 and 49")
+    plot_confusions(data, BasicKNN)
+    plot_confusions(data, WeightedKNN)
+
+    print("Running basic KNN for k between 1 and 99")
     runs = run_knn(data, BasicKNN, 1, 99, 20)
 
     plot_precision(runs, "Basic KNN precision")
 
-    print("Running weighted distances KNN for k between 1 and 49")
+    print("Running weighted distances KNN for k between 1 and 99")
     runs = run_knn(data, WeightedKNN, 1, 99, 20)
 
     plot_precision(runs, "Weighted KNN precision")
 
     plot_datapoints(data)
+
+    # NOTE: standarize data and run again
+    for i in range(3):
+        col = data[:, i]
+        data[:, i] = (col - col.mean()) / col.std()
+
+    print("Running basic KNN with standarized data for k between 1 and 99")
+    runs = run_knn(data, BasicKNN, 1, 99, 20, standarized=True)
+
+    plot_precision(runs, "Basic KNN precision standarized")
+
+    print("Running weighted distances KNN with standarized data for k between 1 and 99")
+    runs = run_knn(data, WeightedKNN, 1, 99, 20, standarized=True)
+
+    plot_precision(runs, "Weighted KNN precision standarized")
+
+    plot_datapoints(data, standarized=True)
 
 
 if __name__ == "__main__":
