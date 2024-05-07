@@ -14,47 +14,47 @@ categories = [1, 0]
 
 def main():
     df = pd.read_csv("../Data/german_credit.csv", sep=",")
-    # Hay que volver a usar esas columnas una vez que se clasifique bien esa data
 
-    """ 
-    Duration of credit:
-        0 - < 12 meses
-        1 - de 12 a 36 meses
-        2 - de 36 a 60 meses
-        3 - > 60 meses
 
-    Credit amount:
-        0 - < 5000
-        1 - de 5000 a 10000
-        2 - de 10000 a 15000
-        3 - > 15000
+    #Particionamos las variables continuas usando cuartiles
+    qdur = 4
+    duration_quants = pd.qcut(df["Duration of Credit (month)"], q=qdur, duplicates='drop')
+    duration_cats = range(qdur)
+    df["Duration of Credit (month)"] = duration_quants.map(lambda x: duration_cats[duration_quants.cat.categories.get_loc(x)])
 
-    Age:
-        0 - < 35 años
-        1 - de 35 a 45 años
-        2 - de 45 a 55 años
-        3 - > 55 años
-    """
+    credit_quants = pd.qcut(df["Credit Amount"], q=qdur, duplicates='drop')
+    credit_cats = range(qdur)
+    df["Credit Amount"] = credit_quants.map(lambda x: credit_cats[credit_quants.cat.categories.get_loc(x)])
 
-    df["Duration of Credit (month)"] = df["Duration of Credit (month)"].transform(
-        lambda x: 0 if x < 12 else (1 if x <= 36 else (2 if x <= 60 else 3))
-    )
-    df["Credit Amount"] = df["Credit Amount"].transform(
-        lambda x: 0 if x < 5000 else (1 if x <= 10000 else (2 if x <= 15000 else 3))
-    )
-    df["Age (years)"] = df["Age (years)"].transform(
-        lambda x: 0 if x < 35 else (1 if x <= 45 else (2 if x <= 55 else 3))
-    )
+    age_quants = pd.qcut(df["Age (years)"], q=qdur, duplicates='drop')
+    age_cats = range(qdur)
+    df["Age (years)"] = age_quants.map(lambda x: age_cats[age_quants.cat.categories.get_loc(x)])
 
     data = df.to_numpy()
     np.random.shuffle(data)
-
     tags = df.columns.to_list()
 
-    randomForest(data, tags)
+    # accepted = data[data[:, 0] == 1]
+    # rejected = data[data[:, 0] == 0]
 
-    for tag, col in zip(tags[1:], data.T[1:]):
-        print(f"{tag}: {entropy_gain(col, data.T[0])}")
+    # data = np.concatenate((accepted, rejected))
+    # np.random.shuffle(data)
+    # data_len = len(data)
+    # perc = 0.8
+    # train = data[: int(perc * data_len)]
+    # test = data[int(perc * data_len) :]
+
+    # tree = ID3(train, tags, entropy_gain)
+
+    # actual = [tree.classify(x, tags) for x in test]
+    # expected = [x[0] for x in test]
+
+    # matrix = confusion_matrix(expected, actual)
+    # precision = getPrecision(matrix[0][0], matrix[0][1])
+
+    # print("Precision:", precision)
+
+    randomForest(data, tags)
 
 
 # Ver en que formato recibe la data de la variable y el dataset
@@ -194,9 +194,9 @@ rng = np.random.default_rng()
 
 def randomForest(data, tags):
     # NOTE: Uncomment to balance data
-    # accepted = data[data[:, 0] == 1][:400]
-    # rejected = data[data[:, 0] == 0]
-    # data = np.concatenate((accepted, rejected))
+    accepted = data[data[:, 0] == 1]
+    rejected = data[data[:, 0] == 0]
+    data = np.concatenate((accepted, rejected))
 
     data_len = len(data)
     perc = 0.8
@@ -204,7 +204,7 @@ def randomForest(data, tags):
     # Cantidad de arboles del forest
     N = 20
 
-    MAX_DEPTH = 15
+    MAX_DEPTH = 10
     precisions = []
 
     for n in range(N):
@@ -329,6 +329,17 @@ def plot_average_precision(precisions):
         avg_depths.append(depth)
         avg_values.append(np.mean(precision_list))
         std_values.append(np.std(precision_list))
+    
+    print(avg_values)
+    print(avg_depths)
+
+    # 2 0.861
+    # 3 0.844
+    # 4 0.857
+    # 5 0.840
+    # 6 0.848
+    # 9 0.84
+    # 10 0.874
 
     # Plotear la línea del promedio de las precisiones con barras de error
     plt.errorbar(avg_depths, avg_values, yerr=std_values, fmt="-o")
@@ -362,6 +373,16 @@ def plot_tree_vs_depth_random_forest(precisions):
     plt.title("Precision vs. Depth")
     plt.legend()
     plt.savefig(f"Out/precision_random_forest.png")
+
+def plot_general_gain(data):
+    gains = np.array(list(map(lambda x: entropy_gain(x, data.T[0]), data.T[1:])))
+
+    plt.bar(range(len(gains)), height = gains.round(decimals=3))
+    plt.xticks(range(len(gains)))
+    plt.ylabel('Gains')
+    plt.xlabel('Index')
+    plt.title('General Gains')
+    plt.savefig(f"Out/general_gain.png")
 
 
 # FALTA - Ver como particionar variables: duration of credit, credit amount y age
