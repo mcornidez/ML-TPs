@@ -15,7 +15,6 @@ categories = [1, 0]
 def main():
     df = pd.read_csv("../Data/german_credit.csv", sep=",")
 
-
     #Particionamos las variables continuas usando cuartiles
     qdur = 4
     duration_quants = pd.qcut(df["Duration of Credit (month)"], q=qdur, duplicates='drop')
@@ -33,26 +32,6 @@ def main():
     data = df.to_numpy()
     np.random.shuffle(data)
     tags = df.columns.to_list()
-
-    # accepted = data[data[:, 0] == 1]
-    # rejected = data[data[:, 0] == 0]
-
-    # data = np.concatenate((accepted, rejected))
-    # np.random.shuffle(data)
-    # data_len = len(data)
-    # perc = 0.8
-    # train = data[: int(perc * data_len)]
-    # test = data[int(perc * data_len) :]
-
-    # tree = ID3(train, tags, entropy_gain)
-
-    # actual = [tree.classify(x, tags) for x in test]
-    # expected = [x[0] for x in test]
-
-    # matrix = confusion_matrix(expected, actual)
-    # precision = getPrecision(matrix[0][0], matrix[0][1])
-
-    # print("Precision:", precision)
 
     randomForest(data, tags)
 
@@ -194,7 +173,7 @@ rng = np.random.default_rng()
 
 def randomForest(data, tags):
     # NOTE: Uncomment to balance data
-    accepted = data[data[:, 0] == 1]
+    accepted = data[data[:, 0] == 1][:400]
     rejected = data[data[:, 0] == 0]
     data = np.concatenate((accepted, rejected))
 
@@ -330,17 +309,6 @@ def plot_average_precision(precisions):
         avg_values.append(np.mean(precision_list))
         std_values.append(np.std(precision_list))
     
-    print(avg_values)
-    print(avg_depths)
-
-    # 2 0.861
-    # 3 0.844
-    # 4 0.857
-    # 5 0.840
-    # 6 0.848
-    # 9 0.84
-    # 10 0.874
-
     # Plotear la línea del promedio de las precisiones con barras de error
     plt.errorbar(avg_depths, avg_values, yerr=std_values, fmt="-o")
 
@@ -367,6 +335,7 @@ def plot_tree_vs_depth_random_forest(precisions):
     for i, precision_depth in enumerate(precisions):
         depths, precisions = zip(*precision_depth)
         plt.plot(depths, precisions, label=f"Tree {i+1}")
+        plt.plot(depths, precisions)
 
     plt.xlabel("Depth")
     plt.ylabel("Precision")
