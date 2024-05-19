@@ -8,9 +8,21 @@ def generate_classified(amount, dim, vec_classifier):
 
 def main():
     dim = 2
-    amount = 10
-    classified_set = generate_classified(amount, dim, np.sign)
-    print(classified_set)
+    total = 10
+    classif = 8
+    misclassif = total - classif
+
+    TP3_1 = generate_classified(total, dim, np.sign)
+    print("TP3_1")
+    print(TP3_1)
+
+    #Los primeros classif elementos estaran bien clasificados y los ultimos misclassif mal clasificados
+    classified_set = generate_classified(classif, dim, np.sign)
+    misclassified_set = generate_classified(misclassif, dim, lambda x: -np.sign(x))
+
+    TP3_2 = np.concatenate((classified_set, misclassified_set), axis=0)
+    print("TP3_2")
+    print(TP3_2)
 
 if __name__ == "__main__":
     main()
