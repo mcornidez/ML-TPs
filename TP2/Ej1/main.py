@@ -173,7 +173,7 @@ rng = np.random.default_rng()
 
 def randomForest(data, tags):
     # NOTE: Uncomment to balance data
-    accepted = data[data[:, 0] == 1][:400]
+    accepted = data[data[:, 0] == 1]
     rejected = data[data[:, 0] == 0]
     data = np.concatenate((accepted, rejected))
 
