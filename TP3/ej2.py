@@ -34,12 +34,12 @@ def main():
     print(1 - error/len(predictions))
 
     #Hacemos predicciones sobre todo el dataset para pintar a la vaca lola
-    pic = np.array(Image.open("Imgs/horse.jpg"))
-    flat_pic = pic.reshape((pic.shape[0]*pic.shape[1], color_dim))
-    painting = clf.predict(flat_pic)
-    painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
-    img = Image.fromarray(painting, 'RGB')
-    img.save('Imgs/horse_painting.jpg')
+    #pic = np.array(Image.open("Imgs/horse.jpg"))
+    #flat_pic = pic.reshape((pic.shape[0]*pic.shape[1], color_dim))
+    #painting = clf.predict(flat_pic)
+    #painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
+    #img = Image.fromarray(painting, 'RGB')
+    #img.save('Imgs/horse_painting.jpg')
 
 
 
