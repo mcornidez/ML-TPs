@@ -14,7 +14,7 @@ class Perceptron:
     def train(self):
         self.w = np.random.rand(self.X.shape[1])
         self.b = np.random.rand()
-        self.plot_line()
+        weights = [np.append(self.w, self.b)]
         p = self.X.shape[0] 
         error = 0
 
@@ -31,12 +31,12 @@ class Perceptron:
 
             error = self.calculate_error()
 
-            self.plot_line()
+            weights.append(np.append(self.w, self.b))
 
             if error == 0:
                 break
 
-        return self.w, self.b
+        return weights
     
     def calculate_error(self):
         linear_output = np.dot(self.X, self.w) + self.b
@@ -44,15 +44,3 @@ class Perceptron:
         error = np.sum(activation != self.y)
         return error
 
-    def plot_line(self):
-        x = np.linspace(0, 10, 100)
-        y = -(self.b + self.w[0]*x) / self.w[1]
-
-        if self.line is None:
-            line, = plt.plot(x, y, 'g-')  
-            self.line = line
-        else:
-            self.line.set_ydata(y)
-        plt.legend(loc='upper left')
-        plt.draw()
-        plt.pause(0.05)
