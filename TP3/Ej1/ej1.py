@@ -6,18 +6,35 @@ import matplotlib.pyplot as plt
 EPOCHS = 5000
 LEARNING_RATE= 0.01
 
-def generate_classified(amount, dim, vec_classifier):
-    points = np.random.uniform(-1, 1, (amount, dim))
-    classified_points = np.concatenate((points, vec_classifier(points[:, dim-1]).reshape((amount, 1))), axis=1) 
+def generate_classified(amount, dim, miss_some = False):
+    classifier = [np.random.uniform(5,10), -np.random.uniform(5,10), np.random.uniform(5,10)]
+
+    points = np.random.uniform(0, 10, (amount, dim))
+
+    with_ones = np.concatenate((points, np.ones((amount, 1))), axis=1)
+
+    classification = [np.dot(row, classifier) for row in with_ones]
+
+    classified_points = np.concatenate((points, np.array(classification).reshape((amount, 1))), axis=1)
+
+    if miss_some:
+        classified_points = np.array(sorted(classified_points, key=lambda row: np.abs(row[-1])))
+
+        classified_points[3, -1] *= -1
+        classified_points[4, -1] *= -1
+
+        np.random.shuffle(classified_points)
+
+    classified_points[:,-1] = np.sign(classified_points[:,-1])
+
     return classified_points
+
 
 def main():
     dim = 2
-    total = 10
-    classif = 8
-    misclassif = total - classif
+    total = 20
 
-    TP3_1 = generate_classified(total, dim, np.sign)
+    TP3_1 = generate_classified(total, dim)
     X = TP3_1[:, :-1]
     y = TP3_1[:, -1] 
 
@@ -28,8 +45,8 @@ def main():
     plt.scatter(df_cat1[:, 0], df_cat1[:, 1], c='r', label='Clase 1')
     plt.scatter(df_cat2[:, 0], df_cat2[:, 1], c='b', label='Clase -1')
     plt.legend(loc='upper left')
-    plt.xlim((-1,1))
-    plt.ylim((-1,1))
+    plt.xlim((0, 10))
+    plt.ylim((0, 10))
     plt.title('Recta de separacion')
     plt.grid(True)
     plt.legend(loc='upper left')

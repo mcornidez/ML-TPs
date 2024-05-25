@@ -13,41 +13,46 @@ class Perceptron:
 
     def train(self):
         self.w = np.random.rand(self.X.shape[1])
-        self.__plot_recta((-self.w[1], self.w[0]))
+        self.b = np.random.rand()
+        self.plot_line()
         p = self.X.shape[0] 
+        error = 0
 
         for epoch in range(self.epochs):
-            for i in range(p):
-                h = np.dot(self.X[i], self.w) + self.b
-                activation = np.sign(h)
+            learning_rate = self.learning_rate * np.exp(-0.0001 * epoch)
 
-                self.w += self.learning_rate * (self.y[i] - activation) * self.X[i]
-                self.b += self.learning_rate * (self.y[i] - activation)
+            i = np.random.randint(0, p)
 
-                error = self.__calculate_error()
+            h = np.dot(self.X[i], self.w) + self.b
+            activation = np.sign(h)
 
-            self.__plot_recta((-self.w[1], self.w[0]))
+            self.w += learning_rate * (self.y[i] - activation) * self.X[i]
+            self.b += learning_rate * (self.y[i] - activation)
+
+            error = self.calculate_error()
+
+            self.plot_line()
 
             if error == 0:
                 break
 
         return self.w, self.b
     
-    def __calculate_error(self):
+    def calculate_error(self):
         linear_output = np.dot(self.X, self.w) + self.b
         activation = np.sign(linear_output)
         error = np.sum(activation != self.y)
         return error
 
-    def __plot_recta(self, vector):
-        x = np.linspace(-5, 5, 100)
-        if vector[0] != 0:  
-            y = -vector[1]/vector[0] * x - self.b/vector[0]
-            if self.line is None:
-                line, = plt.plot(x, y, 'g-')  
-                self.line = line
-            else:
-                self.line.set_ydata(y)
-            plt.legend(loc='upper left')
-            plt.draw()
-            plt.pause(0.1)
+    def plot_line(self):
+        x = np.linspace(0, 10, 100)
+        y = -(self.b + self.w[0]*x) / self.w[1]
+
+        if self.line is None:
+            line, = plt.plot(x, y, 'g-')  
+            self.line = line
+        else:
+            self.line.set_ydata(y)
+        plt.legend(loc='upper left')
+        plt.draw()
+        plt.pause(0.05)
