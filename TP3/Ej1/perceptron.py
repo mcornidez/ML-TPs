@@ -1,6 +1,5 @@
-import random
-import matplotlib.pyplot as plt
 import numpy as np
+
 
 class Perceptron:
     def __init__(self, X, y, epochs, learning_rate) -> None:
@@ -15,7 +14,7 @@ class Perceptron:
         self.w = np.random.rand(self.X.shape[1])
         self.b = np.random.rand()
         weights = [np.append(self.w, self.b)]
-        p = self.X.shape[0] 
+        p = self.X.shape[0]
         error = 0
 
         for epoch in range(self.epochs):
@@ -37,10 +36,9 @@ class Perceptron:
                 break
 
         return weights
-    
+
     def calculate_error(self):
         linear_output = np.dot(self.X, self.w) + self.b
         activation = np.sign(linear_output)
         error = np.sum(activation != self.y)
         return error
-

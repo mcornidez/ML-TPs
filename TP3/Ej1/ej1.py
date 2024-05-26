@@ -1,6 +1,6 @@
 import numpy as np
-import pandas as pd
 from perceptron import Perceptron
+from svm import SVM
 import matplotlib.pyplot as plt
 import matplotlib.animation as ani
 
@@ -151,10 +151,24 @@ def main():
         raise Exception("Bad batch")
     plot_points(TP3_1, [max_margin[1], -1, max_margin[2]])
 
+    # plot_points_gif(TP3_1, weights, "TP3_1")
+
+    svm = SVM(X, y, EPOCHS*30, LEARNING_RATE,100)
+
+    (weights, best) = svm.train()
+
+    i = best[1]
+
+    w = weights[i][:-1]
+    b = weights[i][-1]
+
+    print(f"W: {w}\nB: {b}\n")
+
+    plot_points(TP3_1, [w[0], w[1], b])
     plt.show()
 
-    plot_points_gif(TP3_1, weights, "TP3_1")
-
+    # plot_points_gif(TP3_1, weights, "TP3_1-svm")
+    
     # --------------------------------------------------------------------------------------
 
     TP3_2 = generate_classified(total, dim, miss_some=True)
