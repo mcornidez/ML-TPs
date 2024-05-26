@@ -153,7 +153,7 @@ def main():
 
     # plot_points_gif(TP3_1, weights, "TP3_1")
 
-    svm = SVM(X, y, EPOCHS*30, LEARNING_RATE,100)
+    svm = SVM(X, y, EPOCHS*30, LEARNING_RATE, 100)
 
     (weights, best) = svm.train()
 

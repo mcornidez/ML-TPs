@@ -31,8 +31,8 @@ class SVM:
             t = (np.dot(self.X[i], self.w) + self.b) * self.y[i]
 
             if t < 1:
-                self.w += self.learning_rate * (self.C * self.X[i] * self.y[i] - self.w)
-                self.b += self.learning_rate * self.C * self.y[i]
+                self.w += learning_rate * (self.C * self.X[i] * self.y[i] - self.w)
+                self.b += learning_rate * self.C * self.y[i]
             else:
                 self.w -= learning_rate * self.w
 
