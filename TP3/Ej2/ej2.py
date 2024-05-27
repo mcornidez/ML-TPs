@@ -32,30 +32,35 @@ def main():
     labels = dataset[:, -1].astype(int)
 
     perc = 0.8
-    train_size = int(perc * len(data))
 
-    dataset_train = data[:train_size]
-    labels_train = labels[:train_size]
+    dataset_train = data[:int(perc*len(data))]
+    labels_train = labels[:int(perc*len(labels))]
 
-    dataset_test = data[train_size:]
+    dataset_test = data[-int((1-perc)*len(data)):]
+    labels_test = labels[-int((1-perc)*len(labels)):]
 
-    # Non-shuffled
-    print("Non shuffled")
-    clf = svm.SVC()
-    clf.fit(original_dataset[:int(perc*len(original_dataset))], original_labels[:int(perc*len(original_labels))])
-    print("Predicting...")
-    predictions = clf.predict(original_dataset[-int((1-perc)*len(original_dataset)):])
+    kernels = ['poly', 'rbf']  #TODO: Ver por que "linear" tarda tanto
+    C_values = [0.1, 1, 10, 100] 
 
-    print("Predictions old: ", predictions)
+    for kernel in kernels:
+        for C in C_values:
+            clf = svm.SVC(kernel=kernel, C=C)
+            clf.fit(dataset_train, labels_train)
+            predictions = clf.predict(dataset_test)
+            cm = confusion_matrix(labels_test, predictions)
+            plot_confusion_matrix(cm, kernel, C)
 
-    # Shuffled
-    print("Shuffled")
-    clf = svm.SVC(kernel="linear", C=100)
-    clf.fit(dataset_train, labels_train)
-    print("Predicting...")
-    predictions = clf.predict(dataset_test)
-
-    print("Predictions new: ", predictions)
+def plot_confusion_matrix(cm, kernel, C):
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    plt.figure(figsize=(10, 6))
+    sns.heatmap(cm_normalized, annot=True, cmap='Blues', fmt='.2f')
+    plt.title(f'Kernel: {kernel}, C: {C}')
+    plt.xticks(ticks=np.arange(3)+0.5, labels=['Cielo', 'Pasto', 'Vaca'])
+    plt.yticks(ticks=np.arange(3)+0.5, labels=['Cielo', 'Pasto', 'Vaca'], rotation=0)
+    
+    filename = f'Out/{kernel}_{C}.png'
+    plt.savefig(filename)
+    plt.close()
 
 if __name__ == "__main__":
     main()
