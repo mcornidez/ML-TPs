@@ -33,7 +33,18 @@ def generate_classified(amount, dim, miss_some = False):
 
     return classified_points
 
-def plot_points(data, w, name=None):
+def plot_errors_vs_epochs(errors, name, log=False):
+    plt.figure()
+    plt.plot(range(len(errors)), errors)
+    plt.title("Error over the epochs")
+    plt.xlabel("Epoch")
+    plt.ylabel("Error")
+    if log: 
+        plt.yscale('log')
+    plt.savefig(f"./Out/errors_{name}.png")
+
+
+def plot_points(data, w, name=None, extra=None):
     fig = plt.figure()
     plt.gca().set_aspect('equal', adjustable='box')
     df_cat1 = data[data[:, -1] == 1]
@@ -48,6 +59,13 @@ def plot_points(data, w, name=None):
     y = -(w[2] + w[0]*x) / w[1]
 
     line, = plt.plot(x, y, 'g-')
+
+    if extra is not None:
+        for p in extra:
+            plt.scatter(p[0], p[1], c='black')
+
+    if name is not None: 
+        plt.savefig(f"./Out/scatter_{name}.png")
 
     return line, fig
 
@@ -81,7 +99,7 @@ def calculate_margins(p1, p2, p, X, y):
 
     if np.any(r < 0):
         return None
-    return (min(r), m, b)
+    return (min(r), m, b, p1, p2, p)
 
 def main():
     dim = 2
@@ -93,14 +111,15 @@ def main():
 
     perceptron = Perceptron(X, y, EPOCHS, LEARNING_RATE)
 
-    weights = perceptron.train()
+    (weights, errors) = perceptron.train()
     
     w = weights[-1][:-1]
     b = weights[-1][-1]
 
     print(f"W: {w}\nB: {b}\n")
 
-    plot_points(TP3_1, [w[0], w[1], b])
+    plot_points(TP3_1, [w[0], w[1], b], name="TP3_1_perceptron")
+    plot_errors_vs_epochs(errors, "TP3_1_perceptron")
 
     # NOTE: Maximize margins
 
@@ -149,13 +168,16 @@ def main():
 
     if max_margin is None:
         raise Exception("Bad batch")
-    plot_points(TP3_1, [max_margin[1], -1, max_margin[2]])
+
+    (r, m, b, p1, p2, p) = max_margin
+
+    plot_points(TP3_1, [m, -1, b], name="TP3_1_perceptron_optimized", extra=[p1, p2, p])
 
     # plot_points_gif(TP3_1, weights, "TP3_1")
 
-    svm = SVM(X, y, EPOCHS*30, LEARNING_RATE, 100)
+    svm = SVM(X, y, EPOCHS*20, LEARNING_RATE, 50)
 
-    (weights, best) = svm.train()
+    (weights, best, errors) = svm.train()
 
     i = best[1]
 
@@ -164,24 +186,44 @@ def main():
 
     print(f"W: {w}\nB: {b}\n")
 
-    plot_points(TP3_1, [w[0], w[1], b])
-    plt.show()
+    plot_points(TP3_1, [w[0], w[1], b], "TP3_1_svm")
+    plot_errors_vs_epochs(errors, "TP3_1_svm", log=True)
 
     # plot_points_gif(TP3_1, weights, "TP3_1-svm")
     
     # --------------------------------------------------------------------------------------
 
     TP3_2 = generate_classified(total, dim, miss_some=True)
-    X = TP3_1[:, :-1]
-    y = TP3_1[:, -1] 
+    X = TP3_2[:, :-1]
+    y = TP3_2[:, -1] 
 
     perceptron = Perceptron(X, y, EPOCHS, LEARNING_RATE)
 
-    w = perceptron.train()
-    print(f"W: {w[-1][:-1]}\nB: {w[-1][-1]}\n")
+    (weights, errors) = perceptron.train()
 
-    plot_points_gif(TP3_2, w, "TP3_2")
+    w = weights[-1][:-1]
+    b = weights[-1][-1]
 
+    print(f"W: {w}\nB: {b}\n")
+
+    plot_points(TP3_2, [w[0], w[1], b], name="TP3_2_perceptron")
+    plot_errors_vs_epochs(errors, "TP3_2_perceptron")
+
+    # plot_points_gif(TP3_2, w, "TP3_2")
+
+    svm = SVM(X, y, EPOCHS*20, LEARNING_RATE, 50)
+
+    (weights, best, errors) = svm.train()
+
+    i = best[1]
+
+    w = weights[i][:-1]
+    b = weights[i][-1]
+
+    print(f"W: {w}\nB: {b}\n")
+
+    plot_points(TP3_2, [w[0], w[1], b], "TP3_2_svm")
+    plot_errors_vs_epochs(errors, "TP3_2_svm", log=True)
 
 if __name__ == "__main__":
     main()

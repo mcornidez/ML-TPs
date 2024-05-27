@@ -15,6 +15,7 @@ class Perceptron:
         self.b = np.random.rand()
         weights = [np.append(self.w, self.b)]
         p = self.X.shape[0]
+        errors = [self.calculate_error()]
         error = 0
 
         for epoch in range(self.epochs):
@@ -30,12 +31,13 @@ class Perceptron:
 
             error = self.calculate_error()
 
+            errors.append(error)
             weights.append(np.append(self.w, self.b))
 
             if error == 0:
                 break
 
-        return weights
+        return (weights, errors)
 
     def calculate_error(self):
         linear_output = np.dot(self.X, self.w) + self.b

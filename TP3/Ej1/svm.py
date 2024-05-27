@@ -20,6 +20,7 @@ class SVM:
         self.b = np.random.rand()
         weights = [np.append(self.w, self.b)]
         p = self.X.shape[0]
+        errors = [self.cost()]
 
         best_cost = (self.cost(), 0)
 
@@ -38,12 +39,14 @@ class SVM:
 
             weights.append(np.append(self.w, self.b))
 
-            cost = (self.cost(), epoch)
+            cost = self.cost()
+            errors.append(cost)
+            cost = (cost, epoch)
 
             if cost[0] < best_cost[0]:
                 best_cost = cost
 
-        return (weights, best_cost)
+        return (weights, best_cost, errors)
 
     def cost(self):
         t = (np.dot(self.X, self.w) + self.b) * self.y
