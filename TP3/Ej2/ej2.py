@@ -31,7 +31,7 @@ def main():
     
     labels = binary_labels 
     plotter = plot_binary_confusion_matrix
-    use_lib = True
+    use_lib = False
     #labels = original_labels 
     #plotter = plot_confusion_matrix
 
@@ -51,14 +51,30 @@ def main():
     dataset_test = data[-int((1-perc)*len(data)):]
     labels_test = labels[-int((1-perc)*len(labels)):]
 
+    pic = np.array(Image.open("Imgs/cow.jpg"))
+    flat_pic = pic.reshape((pic.shape[0]*pic.shape[1], color_dim))
+    dataset_test = flat_pic
+    #painting = clf.predict(flat_pic)
+    #painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
+    #img = Image.fromarray(painting, 'RGB')
+    #img.save('Imgs/horse_painting.jpg')
+
     if not use_lib:
-        clf = SVM(dataset_train, labels_train, EPOCHS, LEARNING_RATE, 1)
+        C = 1
+        clf = SVM(dataset_train, labels_train, EPOCHS, LEARNING_RATE, C)
         (weights, best_cost, errors) = clf.train()
         corrected_test = np.append(dataset_test, np.ones((len(dataset_test), 1)), axis = 1).transpose()
-        print(corrected_test.transpose()[0])
-        prediction = np.sign(np.array(weights[best_cost[1]]) @ corrected_test)
-        print(np.unique(prediction))
+        painting = np.sign(np.array(weights[best_cost[1]]) @ corrected_test)
+        #clf = svm.SVC()
+        #clf.fit(dataset_train, labels_train)
+        #painting = clf.predict(dataset_test)
+        painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
+        img = Image.fromarray(painting, 'RGB')
+        img.save('Imgs/cow_binary_painting.jpg')
+        #cm = confusion_matrix(labels_test, predictions)
+        #plotter(cm, "Loss svm", C)
         return
+
 
     kernels = ['poly', 'rbf']  #TODO: Ver por que "linear" tarda tanto
     C_values = [0.1, 1, 10, 100] 
