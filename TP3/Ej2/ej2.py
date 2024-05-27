@@ -5,6 +5,10 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
+import sys
+from Ej1.svm import SVM
+EPOCHS = 5000
+LEARNING_RATE = 0.01
 
 red = np.array(Image.open("Imgs/red.jpg"))
 green = np.array(Image.open("Imgs/green.jpg"))
@@ -27,6 +31,7 @@ def main():
     
     labels = binary_labels 
     plotter = plot_binary_confusion_matrix
+    use_lib = True
     #labels = original_labels 
     #plotter = plot_confusion_matrix
 
@@ -46,10 +51,17 @@ def main():
     dataset_test = data[-int((1-perc)*len(data)):]
     labels_test = labels[-int((1-perc)*len(labels)):]
 
+    if not use_lib:
+        clf = SVM(dataset_train, labels_train, EPOCHS, LEARNING_RATE, 1)
+        (weights, best_cost, errors) = clf.train()
+        corrected_test = np.append(dataset_test, np.ones((len(dataset_test), 1)), axis = 1).transpose()
+        print(corrected_test.transpose()[0])
+        prediction = np.sign(np.array(weights[best_cost[1]]) @ corrected_test)
+        print(np.unique(prediction))
+        return
+
     kernels = ['poly', 'rbf']  #TODO: Ver por que "linear" tarda tanto
-    #C_values = [0.1, 1, 10, 100] 
-    #kernels = ['poly']
-    C_values = [1]
+    C_values = [0.1, 1, 10, 100] 
 
     for kernel in kernels:
         start = time.time()
