@@ -1,37 +1,33 @@
 import numpy as np
 from PIL import Image
 from sklearn import svm
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 from mpl_toolkits.mplot3d import Axes3D
 import time
 import sys
-from Ej1.svm import SVM
+#from Ej1.svm import SVM
 EPOCHS = 5000
 LEARNING_RATE = 0.01
 
-# Cargar imágenes y colores
 red = np.array(Image.open("Imgs/red.jpg"))
 green = np.array(Image.open("Imgs/green.jpg"))
 blue = np.array(Image.open("Imgs/blue.jpg"))
 COLORS = np.array([red[0, 0], green[0, 0], blue[0, 0]])
 
 def calculate_metrics(cm):
-    # Extraer verdaderos positivos, falsos positivos, verdaderos negativos y falsos negativos
     TP = np.diag(cm)
     FP = cm.sum(axis=0) - TP
     FN = cm.sum(axis=1) - TP
     TN = cm.sum() - (FP + FN + TP)
-    
-    # Calcular métricas
+
     accuracy = (TP + TN) / (TP + TN + FP + FN)
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
     f1 = 2 * (precision * recall) / (precision + recall)
     false_positive_rate = FP / (FP + TN)
-    
-    # Manejar casos donde la métrica es indefinida
+
     precision = np.nan_to_num(precision)
     recall = np.nan_to_num(recall)
     f1 = np.nan_to_num(f1)
@@ -63,7 +59,20 @@ def plot_confusion_matrix(cm, kernel, C, degree=None, normalized=False):
               f'F1-score: {f1:.2f}, FPR: {false_positive_rate:.2f}')
     plt.xticks(ticks=np.arange(3)+0.5, labels=['Cielo', 'Pasto', 'Vaca'])
     plt.yticks(ticks=np.arange(3)+0.5, labels=['Cielo', 'Pasto', 'Vaca'], rotation=0)
-    
+
+    plt.savefig(filename)
+    plt.close()
+
+
+def plot_binary_confusion_matrix(cm, kernel, C):
+    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    plt.figure(figsize=(10, 6))
+    sns.heatmap(cm_normalized, annot=True, cmap='Blues', fmt='.2f')
+    plt.title(f'Kernel: {kernel}, C: {C}')
+    plt.xticks(ticks=np.arange(2)+0.5, labels=['No Vaca', 'Vaca'])
+    plt.yticks(ticks=np.arange(2)+0.5, labels=['No Vaca', 'Vaca'], rotation=0)
+
+    filename = f'Out/binary_{kernel}_{C}.png'
     plt.savefig(filename)
     plt.close()
 
@@ -104,19 +113,13 @@ def main():
     original_dataset = np.concatenate((sky, grass, cow), axis=0)
     original_labels = np.concatenate((0*np.ones(len(sky)), 1*np.ones(len(grass)), 2*np.ones(len(cow))))
     binary_labels = np.concatenate((0*np.ones(len(sky)), 0*np.ones(len(grass)), 1*np.ones(len(cow))))
-    
-    labels = binary_labels 
-    plotter = plot_binary_confusion_matrix
-    use_lib = False
-    #labels = original_labels 
-    #plotter = plot_confusion_matrix
-    
-    # Ploteo de puntos antes de mezclar
+
+    #Scatter plot
     data_with_labels = np.hstack((original_dataset, original_labels.reshape(-1, 1)))
     plot_points(data_with_labels, name="TP3_2_a")
 
     # Mezclar los datos y las etiquetas juntos
-    dataset = np.hstack((original_dataset, labels.reshape(-1, 1)))
+    dataset = np.hstack((original_dataset, original_labels.reshape(-1, 1)))
     np.random.shuffle(dataset)
 
     # Separar los datos y las etiquetas después de mezclar
@@ -131,37 +134,11 @@ def main():
     dataset_test = data[-int((1-perc)*len(data)):]
     labels_test = labels[-int((1-perc)*len(labels)):]
 
-    kernels = ['poly', 'rbf', 'linear']  # TODO: Ver por qué "linear" tarda tanto
+    kernels = ['poly', 'rbf']  # TODO: Ver por qué "linear" tarda tanto
     C_values = [0.001, 0.1, 1, 10, 100, 1000]
     poly_degrees = [3, 4, 5]
-    pic = np.array(Image.open("Imgs/cow.jpg"))
-    flat_pic = pic.reshape((pic.shape[0]*pic.shape[1], color_dim))
-    dataset_test = flat_pic
-    #painting = clf.predict(flat_pic)
-    #painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
-    #img = Image.fromarray(painting, 'RGB')
-    #img.save('Imgs/horse_painting.jpg')
-
-    if not use_lib:
-        C = 1
-        clf = SVM(dataset_train, labels_train, EPOCHS, LEARNING_RATE, C)
-        (weights, best_cost, errors) = clf.train()
-        corrected_test = np.append(dataset_test, np.ones((len(dataset_test), 1)), axis = 1).transpose()
-        painting = np.sign(np.array(weights[best_cost[1]]) @ corrected_test)
-        #clf = svm.SVC()
-        #clf.fit(dataset_train, labels_train)
-        #painting = clf.predict(dataset_test)
-        painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
-        img = Image.fromarray(painting, 'RGB')
-        img.save('Imgs/cow_binary_painting.jpg')
-        #cm = confusion_matrix(labels_test, predictions)
-        #plotter(cm, "Loss svm", C)
-        return
-
-
 
     for kernel in kernels:
-        start = time.time()
         for C in C_values:
             if (kernel == 'poly'):
                 for d in poly_degrees:
@@ -183,17 +160,36 @@ def main():
                 cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
                 plot_confusion_matrix(cm_normalized, kernel, C, normalized=True)
 
-def plot_confusion_matrix(cm, kernel, C):
-    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    plt.figure(figsize=(10, 6))
-    sns.heatmap(cm_normalized, annot=True, cmap='Blues', fmt='.2f')
-    plt.title(f'Kernel: {kernel}, C: {C}')
-    plt.xticks(ticks=np.arange(3)+0.5, labels=['Cielo', 'Pasto', 'Vaca'])
-    plt.yticks(ticks=np.arange(3)+0.5, labels=['Cielo', 'Pasto', 'Vaca'], rotation=0)
-    
-    filename = f'Out/{kernel}_{C}.png'
-    plt.savefig(filename)
-    plt.close()
+    #2d en adelante
+    labels = binary_labels 
+    plotter = plot_binary_confusion_matrix
+    use_lib = False
+
+    pic = np.array(Image.open("Imgs/cow.jpg"))
+    flat_pic = pic.reshape((pic.shape[0]*pic.shape[1], color_dim))
+    dataset_test = flat_pic
+    #painting = clf.predict(flat_pic)
+    #painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
+    #img = Image.fromarray(painting, 'RGB')
+    #img.save('Imgs/horse_painting.jpg')
+    """
+    if not use_lib:
+        C = 1
+        clf = SVM(dataset_train, labels_train, EPOCHS, LEARNING_RATE, C)
+        (weights, best_cost, errors) = clf.train()
+        corrected_test = np.append(dataset_test, np.ones((len(dataset_test), 1)), axis = 1).transpose()
+        painting = np.sign(np.array(weights[best_cost[1]]) @ corrected_test)
+        #clf = svm.SVC()
+        #clf.fit(dataset_train, labels_train)
+        #painting = clf.predict(dataset_test)
+        painting = np.array(list(map(lambda x: COLORS[int(x)], painting))).reshape((pic.shape[0], pic.shape[1], color_dim))
+        img = Image.fromarray(painting, 'RGB')
+        img.save('Imgs/cow_binary_painting.jpg')
+        #cm = confusion_matrix(labels_test, predictions)
+        #plotter(cm, "Loss svm", C)
+        return
+    """
+
 
 if __name__ == "__main__":
     main()
