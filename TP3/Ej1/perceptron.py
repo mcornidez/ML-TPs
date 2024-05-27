@@ -15,9 +15,10 @@ class Perceptron:
         self.b = np.random.rand()
         weights = [np.append(self.w, self.b)]
         p = self.X.shape[0]
-        error = 0
+        errors = [self.calculate_error()]
+        best_error = (errors[0], 0)
 
-        for epoch in range(self.epochs):
+        for epoch in range(1, self.epochs):
             # learning_rate = self.learning_rate * np.exp(-0.0001 * epoch)
 
             i = np.random.randint(0, p)
@@ -28,14 +29,19 @@ class Perceptron:
             self.w += self.learning_rate * (self.y[i] - activation) * self.X[i]
             self.b += self.learning_rate * (self.y[i] - activation)
 
-            error = self.calculate_error()
-
             weights.append(np.append(self.w, self.b))
 
-            if error == 0:
+            error = self.calculate_error()
+            errors.append(error)
+            error = (error, epoch)
+            
+            if error[0] < best_error[0]:
+                best_error = error
+
+            if best_error[0] == 0:
                 break
 
-        return weights
+        return (weights, best_error, errors)
 
     def calculate_error(self):
         linear_output = np.dot(self.X, self.w) + self.b
