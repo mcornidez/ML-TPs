@@ -44,7 +44,7 @@ def plot_errors_vs_epochs(errors, name, log=False):
     plt.savefig(f"./Out/errors_{name}.png")
 
 
-def plot_points(data, w, name=None, extra=None):
+def plot_points(data, w=None, name=None, extra=None):
     fig = plt.figure()
     plt.gca().set_aspect('equal', adjustable='box')
     df_cat1 = data[data[:, -1] == 1]
@@ -55,6 +55,11 @@ def plot_points(data, w, name=None, extra=None):
     plt.xlim((0, 10))
     plt.ylim((0, 10))
     plt.grid(True)
+    
+    if w is None:
+        plt.savefig(f"./Out/no_line_{name}.png")
+        return
+
     x = np.linspace(0, 10, 100)
     y = -(w[2] + w[0]*x) / w[1]
 
@@ -70,19 +75,23 @@ def plot_points(data, w, name=None, extra=None):
     return line, fig
 
 def plot_points_gif(data, weights, name):
-    line, fig = plot_points(data, weights[0])
+    line, fig = plot_points(data, weights[0]) # type: ignore
 
     x = np.linspace(0, 10, 100)
 
     def update(i):
-        if i + 1 < len(weights):
-            w = weights[i + 1]
+        i = (i + 1) / 5
+        if not i.is_integer():
+            return
+
+        if i < len(weights):
+            w = weights[int(i)]
 
             y = -(w[2] + w[0] * x) / w[1]
             
             line.set_ydata(y)
 
-    animation = ani.FuncAnimation(fig, update, frames=len(weights) + 100) # type: ignore
+    animation = ani.FuncAnimation(fig, update, frames=5 * len(weights) + 500) # type: ignore
     animation.save(f"./Out/animation_{name}.gif", writer="imagemagick", fps=30)
 
 def calculate_margins(p1, p2, p, X, y): 
@@ -109,12 +118,16 @@ def main():
     X = TP3_1[:, :-1]
     y = TP3_1[:, -1] 
 
+    plot_points(TP3_1, name="TP3_1")
+
     perceptron = Perceptron(X, y, EPOCHS, LEARNING_RATE)
 
-    (weights, errors) = perceptron.train()
+    (weights_TP3_1, best, errors) = perceptron.train()
     
-    w = weights[-1][:-1]
-    b = weights[-1][-1]
+    i = best[1]
+
+    w = weights_TP3_1[i][:-1]
+    b = weights_TP3_1[i][-1]
 
     print(f"W: {w}\nB: {b}\n")
 
@@ -151,7 +164,6 @@ def main():
                 if max_margin is None or margin[0] > max_margin[0]:
                     max_margin = margin
 
-
     for i in range(len(c2)):
         p1 = c2[i]
         for j in range(i + 1, len(c2)):
@@ -173,8 +185,6 @@ def main():
 
     plot_points(TP3_1, [m, -1, b], name="TP3_1_perceptron_optimized", extra=[p1, p2, p])
 
-    # plot_points_gif(TP3_1, weights, "TP3_1")
-
     svm = SVM(X, y, EPOCHS*20, LEARNING_RATE, 50)
 
     (weights, best, errors) = svm.train()
@@ -189,29 +199,29 @@ def main():
     plot_points(TP3_1, [w[0], w[1], b], "TP3_1_svm")
     plot_errors_vs_epochs(errors, "TP3_1_svm", log=True)
 
-    # plot_points_gif(TP3_1, weights, "TP3_1-svm")
-    
-    # --------------------------------------------------------------------------------------
 
     TP3_2 = generate_classified(total, dim, miss_some=True)
     X = TP3_2[:, :-1]
     y = TP3_2[:, -1] 
 
+    plot_points(TP3_2, name="TP3_2")
+
     perceptron = Perceptron(X, y, EPOCHS, LEARNING_RATE)
 
-    (weights, errors) = perceptron.train()
+    (weights, best, errors) = perceptron.train()
 
-    w = weights[-1][:-1]
-    b = weights[-1][-1]
+    i = best[1]
+
+    w = weights[i][:-1]
+    b = weights[i][-1]
 
     print(f"W: {w}\nB: {b}\n")
 
     plot_points(TP3_2, [w[0], w[1], b], name="TP3_2_perceptron")
     plot_errors_vs_epochs(errors, "TP3_2_perceptron")
 
-    # plot_points_gif(TP3_2, w, "TP3_2")
 
-    svm = SVM(X, y, EPOCHS*20, LEARNING_RATE, 50)
+    svm = SVM(X, y, EPOCHS*20, LEARNING_RATE, 100)
 
     (weights, best, errors) = svm.train()
 
@@ -224,6 +234,9 @@ def main():
 
     plot_points(TP3_2, [w[0], w[1], b], "TP3_2_svm")
     plot_errors_vs_epochs(errors, "TP3_2_svm", log=True)
+
+    plot_points_gif(TP3_1, weights_TP3_1, "TP3_1")
+
 
 if __name__ == "__main__":
     main()
