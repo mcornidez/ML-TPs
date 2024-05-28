@@ -134,9 +134,9 @@ def main():
     dataset_test = data[-int((1-perc)*len(data)):]
     labels_test = labels[-int((1-perc)*len(labels)):]
 
-    kernels = ['poly', 'rbf']  # TODO: Ver por qué "linear" tarda tanto
-    C_values = [0.001, 0.1, 1, 10, 100, 1000]
-    poly_degrees = [3, 4, 5]
+    kernels = ['poly', 'rbf', 'linear']  # TODO: Ver por qué "linear" tarda tanto
+    C_values = [0.1, 1, 10, 100]
+    poly_degrees = [2, 3, 4]
 
     for kernel in kernels:
         for C in C_values:
@@ -152,7 +152,7 @@ def main():
             else:
                 clf = svm.SVC(kernel=kernel, C=C)
                 if (kernel == 'linear'):
-                    clf = svm.LinearSVC(C=C)  
+                    clf = svm.LinearSVC(C=C, dual='auto', max_iter=5000)  
                 clf.fit(dataset_train, labels_train)
                 predictions = clf.predict(dataset_test)
                 cm = confusion_matrix(labels_test, predictions)
