@@ -1,4 +1,6 @@
 import pandas as pd
+from datetime import datetime
+import numpy as np
 #from get_bert_embedding import get_sentence_embedding
 
 subset = ["Action", "Comedy", "Drama"]
@@ -22,8 +24,8 @@ def main():
             print("a")
         elif column == "release_date":
             df[column] = pd.to_datetime(df[column])
-            df[column] = df[column].fillna(df[column].mode()[0])
-            print(df[column].mode()[0])
+            df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df[column]))
+            df['days'] = df['days'].fillna(int(df['days'].mode()[0]))
             print("b")
         else:
             df[column] = df[column].astype(str)
