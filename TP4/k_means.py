@@ -3,14 +3,18 @@ import random
 
 def k_means(k, points):
     centroids = points[init_centroids(k, points.shape[0])]
+    print(centroids.shape)
     classes = []
 
     while True:
         diffs = list(map(lambda x: diff(x, centroids), points))
-        classes = list(map(lambda x: np.where(x == min(x)), diffs))
+        classes = list(map(lambda x: np.where(x == min(x))[0][0], diffs))
         #No numpy version vvv
         #classes = list(map(lambda x: x.index(min(x)), diffs))
-        new_centroids = centroids
+        unique, count = np.unique(np.array(classes), return_counts=True)
+        indexes = list(map(lambda x: np.where(classes == x), unique))
+        new_centroids = np.array(list(map(lambda x: points[indexes[x]].sum(axis=0)/count[x], range(len(indexes)))))
+        print("a")
         if np.allclose(centroids, new_centroids):
             break
         centroids = new_centroids
