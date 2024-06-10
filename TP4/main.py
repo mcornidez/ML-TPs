@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from k_means import k_means
 #from get_bert_embedding import get_sentence_embedding
 
 subset = ["Action", "Comedy", "Drama"]
@@ -14,6 +15,8 @@ subset = ["Action", "Comedy", "Drama"]
 #genres, imdb_id, origina_title, overview que son object pero deberian ser strings
 #release_date que es object y deberia ser date
 
+numeric_cols = ['budget', 'popularity', 'production_companies', 'production_countries', 'days', 'revenue', 'runtime', 'spoken_languages', 'vote_average', 'vote_count']
+
 def main():
     df = pd.read_csv("movie_data.csv", delimiter=';')
 
@@ -21,18 +24,20 @@ def main():
     for column in df.columns:
         if pd.api.types.is_numeric_dtype(df[column]):
             df[column] = df[column].fillna(df[column].mean())
-            print("a")
         elif column == "release_date":
             df[column] = pd.to_datetime(df[column])
+            #Transformo cada fecha en una cantidad de dias antes o despues del 01/01/2000
             df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df[column]))
             df['days'] = df['days'].fillna(int(df['days'].mode()[0]))
-            print("b")
         else:
             df[column] = df[column].astype(str)
             df[column] = df[column].fillna("")
-            print("c")
 
-    #Obtengo las columnas para el ultimo punto
+    #Punto 2
+    points = df[numeric_cols].to_numpy()
+    classes, centroids = k_means(5, points)
+
+    #Punto 3
     subset_df = df[df['genres'].isin(subset)]
 
 
