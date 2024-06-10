@@ -35,3 +35,6 @@ def diff(x, centroids):
 
     squared_diff = (centroids - x)**2
     return np.sum(squared_diff, axis=1)
+
+def calculate_variation(classes, points):
+    pass
