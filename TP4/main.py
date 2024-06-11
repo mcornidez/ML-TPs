@@ -35,7 +35,7 @@ def main():
 
     #Punto 2
     points = df[numeric_cols].to_numpy()
-    classes, centroids = k_means(5, points)
+    variation, classes, centroids = k_means(5, points)
 
     #Punto 3
     subset_df = df[df['genres'].isin(subset)]
