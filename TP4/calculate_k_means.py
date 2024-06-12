@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 from k_means import k_means
+import matplotlib.pyplot as plt
 #from get_bert_embedding import get_sentence_embedding
 
 subset = ["Action", "Comedy", "Drama"]
@@ -35,7 +36,17 @@ def main():
 
     #Punto 2
     points = df[numeric_cols].to_numpy()
-    variation, classes, centroids = k_means(5, points)
+    vars = []
+    for k in range(205, 255, 5):
+        variation, classes, centroids, intermediate_vars = k_means(k, points, False)
+        vars.append(np.log(variation))
+
+    plt.plot(list(range(1, 11)), vars)
+    plt.title('Variation over Parition Number')
+    plt.xlabel('Partition Number')
+    plt.ylabel('Variation')
+    plt.show()
+
 
     #Punto 3
     subset_df = df[df['genres'].isin(subset)]
