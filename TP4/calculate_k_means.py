@@ -22,6 +22,8 @@ subset = ["Action", "Comedy", "Drama"]
 #genres, imdb_id, origina_title, overview que son object pero deberian ser strings
 #release_date que es object y deberia ser date
 
+#Usar aprox max_epochs = 500 * n siendo n la dimension de los vectores de entrada
+
 numeric_cols = ['budget', 'popularity', 'production_companies', 'production_countries', 'days', 'revenue', 'runtime', 'spoken_languages', 'vote_average', 'vote_count']
 
 def main():
@@ -42,6 +44,12 @@ def main():
 
     #Punto 2
     points = df[numeric_cols].to_numpy()
+    print_k_means(points)
+
+    #Punto 3
+    subset_df = df[df['genres'].isin(subset)]
+
+def print_k_means(points):
     vars = []
     for k in range(1, 11):
         variation, classes, centroids, intermediate_vars = k_means(k, points, False)
@@ -55,10 +63,6 @@ def main():
     plt.ylabel('Variation')
     plt.show()
     plt.savefig('Graphs/var_over_k.png')
-
-
-    #Punto 3
-    subset_df = df[df['genres'].isin(subset)]
 
 
 

@@ -31,8 +31,6 @@ def k_means(k, points, accumulate_var):
     return variation, classes, centroids, intermediate_var
 
 
-
-
 def init_centroids(k, points):
     #No numpy version vvv
     #return random.sample(points, k)
