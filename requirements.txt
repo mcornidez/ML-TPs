@@ -2,3 +2,6 @@ numpy
 pandas
 matplotlib
 pyqt6
+seaborn
+torch
+transformers

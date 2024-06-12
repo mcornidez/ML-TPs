@@ -9,9 +9,7 @@ def k_means(k, points, accumulate_var):
 
     while True:
         diffs = list(map(lambda x: centroid_diff(x, centroids), points))
-        classes = np.array(list(map(lambda x: np.where(x == min(x))[0][0], diffs)))
-        #No numpy version vvv
-        #classes = list(map(lambda x: x.index(min(x)), diffs))
+        classes = np.argmin(diffs, axis=1)
         indexes = list(map(lambda x: np.where(classes == x), range(k)))
         counts = []
         for i in range(k):
@@ -25,15 +23,12 @@ def k_means(k, points, accumulate_var):
             break
         centroids = new_centroids
     
-    
     variation = sum(calculate_variation(classes, points))
 
     return variation, classes, centroids, intermediate_var
 
 
 def init_centroids(k, points):
-    #No numpy version vvv
-    #return random.sample(points, k)
     centroids = np.random.choice(points, size=k, replace=False)
     return centroids
 
@@ -62,7 +57,3 @@ def single_variation(points):
     res_triu = np.sum(diff_triu**2)/point_count
     #res_tril = np.sum(diff_tril**2)/point_count
     return res_triu
-
-
-
-

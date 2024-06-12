@@ -39,7 +39,7 @@ def main():
             df[column] = pd.to_datetime(df[column])
             #Transformo cada fecha en una cantidad de dias antes o despues del 01/01/2000
             df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df[column]))
-            df['days'] = df['days'].fillna(int(df['days'].mode()[0]))
+            df['days'] = df['days'].fillna(int(df['days'].mode()[0])) # type: ignore
             mean = df['days'].mean()
             std = df['days'].std()
             df['days'] = (df['days'] - mean)/std
