@@ -7,6 +7,12 @@ import matplotlib.pyplot as plt
 
 subset = ["Action", "Comedy", "Drama"]
 
+# Preguntas!!!!
+# Como actualizamos el centroide si no le corresponde ningun elemento (div por 0!!!)
+# La varianza nos da valores muy grandes, del orden de 10^20
+# Tema de los embeddings de bert
+# Como hacemos analisis del error ahora con las variaciones?
+
 #Ver que hacemos con las columnas que son strings:
 # No las tenemos en cuenta
 # Las tenemos en cuenta y usamos distancia == 0 si hay igualdad y 1 si no
@@ -37,15 +43,18 @@ def main():
     #Punto 2
     points = df[numeric_cols].to_numpy()
     vars = []
-    for k in range(205, 255, 5):
+    for k in range(1, 11):
         variation, classes, centroids, intermediate_vars = k_means(k, points, False)
         vars.append(np.log(variation))
+    
+    print(vars)
 
     plt.plot(list(range(1, 11)), vars)
     plt.title('Variation over Parition Number')
     plt.xlabel('Partition Number')
     plt.ylabel('Variation')
     plt.show()
+    plt.savefig('Graphs/var_over_k.png')
 
 
     #Punto 3

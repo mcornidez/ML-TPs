@@ -2,7 +2,6 @@ import numpy as np
 import random
 
 def k_means(k, points, accumulate_var):
-    print(k)
     centroids = points[init_centroids(k, points.shape[0])]
     classes = []
 
@@ -10,17 +9,15 @@ def k_means(k, points, accumulate_var):
 
     while True:
         diffs = list(map(lambda x: centroid_diff(x, centroids), points))
-        print(len(diffs))
-        print(centroids.shape)
-        classes = list(map(lambda x: np.where(x == min(x))[0][0], diffs))
+        classes = np.array(list(map(lambda x: np.where(x == min(x))[0][0], diffs)))
         #No numpy version vvv
         #classes = list(map(lambda x: x.index(min(x)), diffs))
-        unique, count = np.unique(np.array(classes), return_counts=True)
-        print(unique.shape)
-        indexes = list(map(lambda x: np.where(classes == x), unique))
-        print(len(indexes))
-        new_centroids = np.array(list(map(lambda x: points[indexes[x]].sum(axis=0)/count[x], range(len(indexes)))))
-        #print("a")
+        indexes = list(map(lambda x: np.where(classes == x), range(k)))
+        counts = []
+        for i in range(k):
+            count = np.where(classes == i)[0].shape[0]
+            counts.append(count if count != 0 else 1)
+        new_centroids = np.array(list(map(lambda x: points[indexes[x]].sum(axis=0)/counts[x], range(len(indexes)))))
         if accumulate_var == True:
             var = sum(calculate_variation(classes, points))
             intermediate_var.append(var)
@@ -30,7 +27,6 @@ def k_means(k, points, accumulate_var):
     
     
     variation = sum(calculate_variation(classes, points))
-    print(variation)
 
     return variation, classes, centroids, intermediate_var
 
