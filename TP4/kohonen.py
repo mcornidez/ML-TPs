@@ -48,16 +48,20 @@ class KohonenNetwork:
     def train(self, data: ndarray):
         assert data.shape[1] == self._matrix.shape[2]
 
-        for epoch in range(1, 500 * data.shape[0]):
+        for epoch in range(1, 500):
             self.update_parameters(epoch)
-            element = data[np.random.randint(0, data.shape[0])]
+            np.random.shuffle(data)
+            for element in data:
+                i_win, j_win = self.get_closest_weight_to_element_index(element)
 
-            i_win, j_win = self.get_closest_weight_to_element_index(element)
-
-            for i in range(self._size):
-                for j in range(self._size):
-                    if np.sqrt((i - i_win) ** 2 + (j - j_win) ** 2) <= self._radius:
-                        np.add(self._matrix[i, j], self._learning_rate * (element - self._matrix[i, j]))
+                for i in range(self._size):
+                    for j in range(self._size):
+                        d = np.sqrt((i - i_win) ** 2 + (j - j_win) ** 2)
+                        V = np.exp(-2 * d / self._radius)
+                        self._matrix[i, j] += self._learning_rate * V * (element - self._matrix[i, j])
+                
+            if epoch % 10 == 0:
+                print(epoch)
 
     def update_parameters(self, epoch: int):
         if self._update_learning_rate:
