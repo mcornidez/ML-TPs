@@ -5,3 +5,5 @@ pyqt6
 seaborn
 torch
 transformers
+plotly
+scipy
