@@ -4,16 +4,20 @@ from datetime import datetime
 
 subset = ["Action", "Comedy", "Drama"]
 
-numeric_cols = ['budget', 'popularity', 'production_companies', 'production_countries', 'days', 'revenue', 'runtime', 'spoken_languages', 'vote_average', 'vote_count']
+numeric_cols = ['budget', 'popularity', 'production_companies', 'production_countries', 'revenue', 'runtime', 'spoken_languages', 'vote_average', 'vote_count']
 
 df = pd.read_csv("movie_data.csv", delimiter=';')
 
 use_genres = False
+use_date = False
 
 #Proceso release_date
-df['release_date'] = pd.to_datetime(df['release_date'])
-df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df['release_date']))
-df['days'] = df['days'].fillna(int(df['days'].mode()[0])) # type: ignore
+if use_date:
+    df['release_date'] = pd.to_datetime(df['release_date'])
+    df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df['release_date']))
+    df['days'] = df['days'].fillna(int(df['days'].mode()[0])) # type: ignore
+    numeric_cols.append('days')
+
 
 #Proceso genres
 if use_genres:
