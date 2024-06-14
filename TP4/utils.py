@@ -8,23 +8,26 @@ numeric_cols = ['budget', 'popularity', 'production_companies', 'production_coun
 
 df = pd.read_csv("movie_data.csv", delimiter=';')
 
-#Completo campos que tienen na para poder medir distancias
+use_genres = False
+
+#Proceso release_date
+df['release_date'] = pd.to_datetime(df['release_date'])
+df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df['release_date']))
+df['days'] = df['days'].fillna(int(df['days'].mode()[0])) # type: ignore
+
+#Proceso genres
+if use_genres:
+    df['genres'] = df['genres'].astype(str)
+    df['genres'] = df['genres'].fillna("")
+    unique_genres = df['genres'].unique()
+    df['genre_id'] = df['genres'].map(lambda x: np.where(unique_genres == x)[0][0])
+    numeric_cols.append('genre_id')
+
 for column in df.columns:
     if pd.api.types.is_numeric_dtype(df[column]):
         mean = df[column].mean()
         std = df[column].std()
         df[column] = (df[column].fillna(mean) - mean)/std
-    elif column == "release_date":
-        df[column] = pd.to_datetime(df[column])
-        #Transformo cada fecha en una cantidad de dias antes o despues del 01/01/2000
-        df['days'] = list(map((lambda x: (x - datetime(2000, 1, 1)).days if pd.notna(x) else np.nan), df[column]))
-        df['days'] = df['days'].fillna(int(df['days'].mode()[0])) # type: ignore
-        mean = df['days'].mean()
-        std = df['days'].std()
-        df['days'] = (df['days'] - mean)/std
-    else:
-        df[column] = df[column].astype(str)
-        df[column] = df[column].fillna("")
 
 def get_data(): 
     return df[numeric_cols].to_numpy(), df
