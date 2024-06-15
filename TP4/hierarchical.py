@@ -1,6 +1,6 @@
 from matplotlib.pylab import axis
 import numpy as np
-from scipy.cluster.hierarchy import dendrogram
+from scipy.cluster.hierarchy import dendrogram, linkage
 import numpy as np
 from enum import Enum
 
@@ -13,8 +13,36 @@ class Method(Enum):
 
 
 class Cluster:
-    def __init__(self, points):
+    def __init__(self, id, points, method):
         self.points = points
+        self.method = method
+        self.id = id
+        self.distances = {}
+
+    def join(self, other, id):
+        points = np.concatenate((self.points, other.points), axis=0)
+        assert self.method == other.method
+        return Cluster(id, points, self.method)
+
+    def distance(self, other):
+        if other.id in self.distances:
+            return self.distances[other.id]
+
+        match self.method:
+            case Method.MAX:
+                d = self.distance_max(other)
+            case Method.MIN:
+                d = self.distance_min(other)
+            case Method.AVERAGE:
+                d = self.distance_avg(other)
+            case Method.CENTROID:
+                d = self.distance_centroid(other)
+            case _:
+                raise Exception("Non valid method")
+
+        self.distances[other.id] = d
+        other.distances[self.id] = d
+        return d
 
     def size(self):
         return len(self.points)
@@ -61,6 +89,7 @@ class Cluster:
 
         return np.linalg.norm(np.mean(p1, axis=0) - np.mean(p2, axis=0))
 
+
 # X = np.random.rand(5, 5)
 # X = np.array(
 #     [
@@ -83,11 +112,52 @@ X = np.array(
     ]
 )
 
-def train_hierarchical(data: np.ndarray):
-    linkage = []
-    
-    data = np.array([np.insert(row, 0, i) for i, row in enumerate(data)])
 
+def train_hierarchical(data: np.ndarray, method: Method):
+    linkage = []
+    idx = len(data)
+    clusters = {i: Cluster(i, np.array([row]), method) for i, row in enumerate(data)}
+
+    for id in range(idx, 2 * idx - 1):
+        values = np.array(list(clusters.values()))
+        matrix = calculate_matrix(values)
+        (i, j) = np.unravel_index(np.argmin(matrix), matrix.shape)
+        d = values[i].distance(values[j])
+        id_i = values[i].id
+        id_j = values[j].id
+        new = values[i].join(values[j], id)
+
+        del clusters[id_i]
+        del clusters[id_j]
+
+        clusters[id] = new
+
+        linkage.append([id_i, id_j, d, new.size()])
+
+    return linkage
+
+
+def calculate_matrix(clusters: np.ndarray):
+    size = len(clusters)
+    matrix = np.zeros((size, size))
+    for i in range(size):
+        for j in range(i, size):
+            d = clusters[i].distance(clusters[j])
+
+            if d == 0:
+                d = np.inf
+
+            matrix[i, j] = d
+            matrix[j, i] = d
+
+    return matrix
+
+
+linkage2 = train_hierarchical(X, Method.MIN)
+
+
+print(np.array(linkage2))
+print(linkage(X, "single"))
 
 # fig = ff.create_dendrogram(X)
 # fig.update_layout({"width": 800, "height": 800})
