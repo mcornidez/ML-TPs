@@ -2,6 +2,9 @@ from hierarchical import Method, train_hierarchical
 import numpy as np
 from utils import get_data
 import plots
+import sys
+sys.setrecursionlimit(10000)
+
 
 from scipy.cluster.hierarchy import linkage
 
@@ -21,13 +24,20 @@ def main():
         ]
     )
 
-    linkage_min = train_hierarchical(X, Method.MIN)
-    plots.dendogram(linkage_min, "")
+    #linkage_min = train_hierarchical(X, Method.MIN)
+    #print("min")
+    #plots.dendogram(linkage_min, "")
     # Run with library
-    plots.dendogram(linkage(data, "single"), "")
+    #linkage(data, "single")
+    #plots.dendogram(linkage(data, "single"), "")
+    linkage_min = train_hierarchical(data, Method.MIN)
+    print("min")
     linkage_max = train_hierarchical(data, Method.MAX)
+    print("max")
     linkage_avg = train_hierarchical(data, Method.AVERAGE)
+    print("avg")
     linkage_centroid = train_hierarchical(data, Method.CENTROID)
+    print("cent")
 
 
 if __name__ == "__main__":

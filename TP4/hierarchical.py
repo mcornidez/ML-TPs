@@ -59,8 +59,11 @@ class Cluster:
         return distance
 
     def distance_min(self, other):
-        p1 = self.points
-        p2 = other.points
+        print("a")
+
+        diff = get_diffs(self.points, other.points)
+
+        return np.min(diff)
 
         distance = np.inf
         for p in p1:
@@ -94,6 +97,7 @@ def train_hierarchical(data: np.ndarray, method: Method):
     idx = len(data)
     clusters = {i: Cluster(i, np.array([row]), method) for i, row in enumerate(data)}
 
+    print("c")
     for id in range(idx, 2 * idx - 1):
         print(id)
         values = np.array(list(clusters.values()))
@@ -119,6 +123,7 @@ def calculate_matrix(clusters: np.ndarray):
     matrix = np.zeros((size, size))
     for i in range(size):
         for j in range(i, size):
+            print("b")
             d = clusters[i].distance(clusters[j])
 
             if d == 0:
@@ -128,6 +133,15 @@ def calculate_matrix(clusters: np.ndarray):
             matrix[j, i] = d
 
     return matrix
+
+def get_diffs(p1, p2):
+
+    p1 = p1.reshape((1, p1.shape[1], p1.shape[0]))
+    p2 = p2.reshape((p1.shape[0], p1.shape[1], 1))
+
+    return np.linalg.norm(p1 - p2, axis = 1)
+
+
 
 
 # X = np.array(
