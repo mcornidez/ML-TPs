@@ -9,7 +9,7 @@ numeric_cols = ['budget', 'popularity', 'production_companies', 'production_coun
 df = pd.read_csv("movie_data.csv", delimiter=';')
 
 use_genres = False
-use_date = False
+use_date = True
 
 #Proceso release_date
 if use_date:
