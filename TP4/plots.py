@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
+from scipy.cluster.hierarchy import dendrogram
 
 import os
+
 os.makedirs("./Out", exist_ok=True)
+
 
 def heatmap(matrix, file, title=None, text=None):
     plt.figure()
@@ -22,3 +25,11 @@ def heatmap(matrix, file, title=None, text=None):
         plt.title(title)
 
     plt.savefig(f"./Out/{file}")
+
+
+def dendogram(linkage, file):
+    plt.figure()
+
+    dendrogram(linkage, leaf_rotation=90)
+
+    plt.show()
