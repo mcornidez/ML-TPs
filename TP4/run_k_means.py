@@ -1,45 +1,36 @@
 import utils
 from k_means import k_means
+import numpy as np
 import matplotlib.pyplot as plt
-#from get_bert_embedding import get_sentence_embedding
-
-# Preguntas!!!!
-# Como actualizamos el centroide si no le corresponde ningun elemento (div por 0!!!)
-# La varianza nos da valores muy grandes, del orden de 10^20
-# Tema de los embeddings de bert
-# Como hacemos analisis del error ahora con las variaciones?
-
-#Ver que hacemos con las columnas que son strings:
-# No las tenemos en cuenta
-# Las tenemos en cuenta y usamos distancia == 0 si hay igualdad y 1 si no
-# Usamos embeddings de bert
-
-#Todas las columnas son numericas menos:
-#genres, imdb_id, origina_title, overview que son object pero deberian ser strings
-#release_date que es object y deberia ser date
-
-#Usar aprox max_epochs = 500 * n siendo n la dimension de los vectores de entrada
 
 def main():
     points, df = utils.get_data()
-    print_k_means(points)
+    #points, df = utils.get_subset()
+    #print_k_means(points)
+    variation, variations, classes, centroids, intermediate_vars = k_means(7, points, False)
+    print(utils.numeric_cols)
+    print(variations)
+    print(centroids)
 
-    subset, subset_df = utils.get_subset()
 
 def print_k_means(points):
-    vars = []
-    for k in range(1, 11):
-        variation, classes, centroids, intermediate_vars = k_means(k, points, False)
-        vars.append(variation)
+    runs = 5
+    vars = np.zeros((runs, 10))
+    for i in range(runs):
+        for k in range(1, 11):
+            variation, variations, classes, centroids, intermediate_vars = k_means(k, points, False)
+            vars[i, k-1] = variation
+            print(vars)
     
-    print(vars)
+    mean = vars.sum(axis=0)/runs
+    print(mean)
 
-    plt.plot(list(range(1, 11)), vars)
+    plt.plot(list(range(1, 11)), mean)
     plt.title('Variation over Parition Number')
     plt.xlabel('Partition Number')
     plt.ylabel('Variation')
     plt.show()
-    plt.savefig('Graphs/var_over_k.png')
+    #plt.savefig('Graphs/var_over_k.png')
 
 
 if __name__ == "__main__":

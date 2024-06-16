@@ -21,9 +21,9 @@ def k_means(k, points, accumulate_var):
             break
         centroids = new_centroids
     
-    variation = sum(calculate_variation(classes, points))
+    variations = calculate_variation(classes, points)
 
-    return variation, classes, centroids, intermediate_var
+    return sum(variations), variations, classes, centroids, intermediate_var
 
 
 def init_centroids(k, points):
