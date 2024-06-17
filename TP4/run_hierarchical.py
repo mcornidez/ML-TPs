@@ -1,6 +1,6 @@
 from hierarchical import Method, train_hierarchical
 import numpy as np
-from utils import get_data, data_len
+import utils
 import plots
 import sys
 import pickle
@@ -11,7 +11,8 @@ from scipy.cluster.hierarchy import linkage
 
 
 def main():
-    data, df = get_data()
+    #data, df = utils.get_data()
+    data, df = utils.get_subset()
 
     # Test data
     X = np.array(
@@ -26,27 +27,28 @@ def main():
     )
 
     #linkage_min = train_hierarchical(X, Method.MIN)
-    #print("min")
     #plots.dendogram(linkage_min, "")
     # Run with library
     #linkage(data, "single")
     #plots.dendogram(linkage(data, "single"), "")
-    linkage_min = train_hierarchical(X, Method.MIN)
-    with open('Linkages/linkage_min_len=' + str(data_len) +'.pkl', 'wb') as file:
+    linkage_min = train_hierarchical(data, Method.MIN)
+    linkage_max = train_hierarchical(data, Method.MAX)
+    linkage_avg = train_hierarchical(data, Method.AVERAGE)
+    linkage_cent = train_hierarchical(data, Method.CENTROID)
+
+    with open('Linkages/linkage_min_sub_len=' + str(utils.data_len) +'.pkl', 'wb') as file:
         pickle.dump(linkage_min, file)
-    plots.dendogram(linkage_min, 'Graphs/dendr_min_len=1000.png', 'png')
-    linkage_max = train_hierarchical(X, Method.MAX)
-    with open('Linkages/linkage_max_len=' + str(data_len) +'.pkl', 'wb') as file:
+    with open('Linkages/linkage_max_sub_len=' + str(utils.data_len) +'.pkl', 'wb') as file:
         pickle.dump(linkage_max, file)
-    plots.dendogram(linkage_min, 'Graphs/dendr_max_len=1000.png', 'png')
-    linkage_avg = train_hierarchical(X, Method.AVERAGE)
-    with open('Linkages/linkage_avg_len=' + str(data_len) +'.pkl', 'wb') as file:
+    with open('Linkages/linkage_avg_sub_len=' + str(utils.data_len) +'.pkl', 'wb') as file:
         pickle.dump(linkage_avg, file)
-    plots.dendogram(linkage_min, 'Graphs/dendr_avg_len=1000.png', 'png')
-    linkage_cent = train_hierarchical(X, Method.CENTROID)
-    with open('Linkages/linkage_cent_len=' + str(data_len) +'.pkl', 'wb') as file:
+    with open('Linkages/linkage_cent_sub_len=' + str(utils.data_len) +'.pkl', 'wb') as file:
         pickle.dump(linkage_cent, file)
-    plots.dendogram(linkage_min, 'Graphs/dendr_cent_len=1000.png', 'png')
+    
+    #plots.dendogram(linkage_min, 'Graphs/Dendr/dendr_min_len=' + str(data_len) + '.png', 'png')
+    #plots.dendogram(linkage_max, 'Graphs/Dendr/dendr_max_len=' + str(data_len) + '.png', 'png')
+    #plots.dendogram(linkage_avg, 'Graphs/Dendr/dendr_avg_len=' + str(data_len) + '.png', 'png')
+    #plots.dendogram(linkage_cent, 'Graphs/Dendr/dendr_cent_len=' + str(data_len) + '.png', 'png')
 
 
 if __name__ == "__main__":

@@ -6,11 +6,25 @@ import matplotlib.pyplot as plt
 def main():
     points, df = utils.get_data()
     #points, df = utils.get_subset()
+    df.reset_index(drop=True, inplace=True)
     #print_k_means(points)
-    variation, variations, classes, centroids, intermediate_vars = k_means(7, points, False)
-    print(utils.numeric_cols)
-    print(variations)
-    print(centroids)
+
+
+    variation, variations, classes, centroids, intermediate_vars = k_means(3, points, False)
+
+    #comedy_cls = classes[genres_df.index[genres_df['genres'] == 'Comedy']]
+    comedy_cls = classes[df.index[df['genres'] == 'Comedy']]
+    unique, counts = np.unique(comedy_cls, return_counts=True)
+    print(counts)
+    drama_cls = classes[df.index[df['genres'] == 'Drama']]
+    unique, counts = np.unique(drama_cls, return_counts=True)
+    print(counts)
+    action_cls = classes[df.index[df['genres'] == 'Action']]
+    unique, counts = np.unique(action_cls, return_counts=True)
+    print(counts)
+
+    #print(utils.numeric_cols)
+    print(variation)
 
 
 def print_k_means(points):

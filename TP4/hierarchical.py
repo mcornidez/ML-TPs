@@ -103,7 +103,6 @@ def train_hierarchical(data: np.ndarray, method: Method):
     idx = len(data)
     clusters = {i: Cluster(i, np.array([row]), method) for i, row in enumerate(data)}
 
-    print("c")
     for id in range(idx, 2 * idx - 1):
         print(id)
         values = np.array(list(clusters.values()))
@@ -134,7 +133,6 @@ def calculate_matrix(clusters: np.ndarray):
     matrix = np.zeros((size, size))
     for i in range(size):
         for j in range(i, size):
-            print("b")
             d = clusters[i].distance(clusters[j])
 
             if d == 0:
@@ -143,7 +141,6 @@ def calculate_matrix(clusters: np.ndarray):
             matrix[i, j] = d
             matrix[j, i] = d
 
-    print(np.allclose(matrix, dists))
     return matrix
 
 def get_diffs(p1, p2):
