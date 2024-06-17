@@ -47,6 +47,9 @@ class Cluster:
         return len(self.points)
 
     def distance_max(self, other):
+        diff = get_diffs(self.points, other.points)
+        return np.max(diff)
+
         p1 = self.points
         p2 = other.points
 
@@ -59,11 +62,11 @@ class Cluster:
         return distance
 
     def distance_min(self, other):
-        #print("a")
-
         diff = get_diffs(self.points, other.points)
-
         return np.min(diff)
+
+        p1 = self.points
+        p2 = other.points
 
         distance = np.inf
         for p in p1:
@@ -74,6 +77,9 @@ class Cluster:
         return distance
 
     def distance_avg(self, other):
+        diff = get_diffs(self.points, other.points)
+        return np.mean(diff)
+
         p1 = self.points
         p2 = other.points
 
@@ -86,10 +92,10 @@ class Cluster:
         return avg
 
     def distance_centroid(self, other):
+        return np.linalg.norm(np.mean(self.points, axis=0) - np.mean(other.points, axis=0))
+
         p1 = self.points
         p2 = other.points
-
-        return np.linalg.norm(np.mean(p1, axis=0) - np.mean(p2, axis=0))
 
 
 def train_hierarchical(data: np.ndarray, method: Method):

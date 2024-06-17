@@ -6,7 +6,9 @@ subset = ["Action", "Comedy", "Drama"]
 
 numeric_cols = ['budget', 'popularity', 'production_companies', 'production_countries', 'revenue', 'runtime', 'spoken_languages', 'vote_average', 'vote_count']
 
+data_len = 1000
 df = pd.read_csv("movie_data.csv", delimiter=';')
+df = df.sample(frac=1).head(data_len)
 
 use_genres = True 
 use_date = True

@@ -27,9 +27,10 @@ def heatmap(matrix, file, title=None, text=None):
     plt.savefig(f"./Out/{file}")
 
 
-def dendogram(linkage, file):
+def dendogram(linkage, file_name, format):
     plt.figure()
 
     dendrogram(linkage, leaf_rotation=90)
+    plt.savefig(file_name, format=format, dpi=300)
 
     plt.show()
