@@ -6,7 +6,7 @@ import os
 os.makedirs("./Out", exist_ok=True)
 
 
-def heatmap(matrix, file, title=None, text=None):
+def heatmap(matrix, file, title=None, text=None, fontSize=9):
     plt.figure()
 
     if text is None:
@@ -18,7 +18,7 @@ def heatmap(matrix, file, title=None, text=None):
     for i in range(len(text)):
         for j in range(len(text[0])):
             plt.text(
-                j, i, text[i][j], ha="center", va="center", color="black", fontsize=9
+                j, i, text[i][j], ha="center", va="center", color="black", fontsize=fontSize
             )
 
     if title is not None:

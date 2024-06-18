@@ -40,6 +40,7 @@ def get_data():
     return df[numeric_cols].to_numpy(), df
 
 subset_df = df[df['genres'].isin(subset)]
+subset_df = subset_df.sample(frac=1).reset_index(drop=True)
 
 def get_subset():
     return subset_df[numeric_cols].to_numpy(), subset_df
