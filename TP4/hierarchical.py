@@ -51,52 +51,16 @@ class Cluster:
         diff = get_diffs(self.points, other.points)
         return np.max(diff)
 
-        p1 = self.points
-        p2 = other.points
-
-        distance = 0
-        for p in p1:
-            d = max(np.linalg.norm(p - p2, axis=1))
-            if d > distance:
-                distance = d
-
-        return distance
-
     def distance_min(self, other):
         diff = get_diffs(self.points, other.points)
         return np.min(diff)
-
-        p1 = self.points
-        p2 = other.points
-
-        distance = np.inf
-        for p in p1:
-            d = min(np.linalg.norm(p - p2, axis=1))
-            if d < distance:
-                distance = d
-
-        return distance
 
     def distance_avg(self, other):
         diff = get_diffs(self.points, other.points)
         return np.mean(diff)
 
-        p1 = self.points
-        p2 = other.points
-
-        avg = None
-        for p in p1:
-            d = np.mean(np.linalg.norm(p - p2, axis=1))
-            if avg is not None:
-                avg = (avg + d) / 2
-
-        return avg
-
     def distance_centroid(self, other):
         return np.linalg.norm(np.mean(self.points, axis=0) - np.mean(other.points, axis=0))
-
-        p1 = self.points
-        p2 = other.points
 
 
 def train_hierarchical(data: np.ndarray, method: Method, genres):
@@ -137,19 +101,6 @@ def calculate_matrix(clusters: np.ndarray):
     dists = vect_get_dist(np.reshape(clusters, (size, 1)), clusters)
     dists[diag, diag] = np.inf
     return dists
-
-    matrix = np.zeros((size, size))
-    for i in range(size):
-        for j in range(i, size):
-            d = clusters[i].distance(clusters[j])
-
-            if d == 0:
-                d = np.inf
-
-            matrix[i, j] = d
-            matrix[j, i] = d
-
-    return matrix
 
 def get_diffs(p1, p2):
 
