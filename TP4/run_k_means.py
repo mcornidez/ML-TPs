@@ -10,7 +10,7 @@ def main():
     #print_k_means(points)
 
 
-    variation, variations, classes, centroids, intermediate_vars = k_means(3, points, False)
+    variation, variations, classes, centroids, intermediate_vars = k_means(12, points, False)
 
     #comedy_cls = classes[genres_df.index[genres_df['genres'] == 'Comedy']]
     comedy_cls = classes[df.index[df['genres'] == 'Comedy']]

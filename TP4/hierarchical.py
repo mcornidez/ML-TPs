@@ -12,8 +12,9 @@ class Method(Enum):
 
 
 class Cluster:
-    def __init__(self, id, points, method):
+    def __init__(self, id, points, method, genres_count):
         self.points = points
+        self.genres_count = genres_count
         self.method = method
         self.id = id
         self.distances = {}
@@ -21,7 +22,7 @@ class Cluster:
     def join(self, other, id):
         points = np.concatenate((self.points, other.points), axis=0)
         assert self.method == other.method
-        return Cluster(id, points, self.method)
+        return Cluster(id, points, self.method, self.genres_count + other.genres_count)
 
     def distance(self, other):
         if other.id in self.distances:
@@ -98,14 +99,21 @@ class Cluster:
         p2 = other.points
 
 
-def train_hierarchical(data: np.ndarray, method: Method):
+def train_hierarchical(data: np.ndarray, method: Method, genres):
     linkage = []
     idx = len(data)
-    clusters = {i: Cluster(i, np.array([row]), method) for i, row in enumerate(data)}
+    unique = np.unique(genres)
+    genres_count = np.zeros((len(genres), len(unique)))
+    for i, j in enumerate(genres):
+        genres_count[i, j] = 1
+    clusters = {i: Cluster(i, np.array([row]), method, genres_count[i]) for i, row in enumerate(data)}
 
     for id in range(idx, 2 * idx - 1):
         print(id)
         values = np.array(list(clusters.values()))
+        if 2 * idx - 1 - id < 30:
+            for clust in values:
+                print(clust.genres_count)
         matrix = calculate_matrix(values)
         (i, j) = np.unravel_index(np.argmin(matrix), matrix.shape)
         d = values[i].distance(values[j])
