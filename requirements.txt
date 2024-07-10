@@ -7,3 +7,6 @@ torch
 transformers
 plotly
 scipy
+keras
+tensorflow
+scikit-learn
